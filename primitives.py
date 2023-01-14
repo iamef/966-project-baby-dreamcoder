@@ -33,34 +33,32 @@ def disj(bool1, bool2):
 
 def cond(bool_item, if_item, else_item):
     # note that else_item may be None
-    # see if our program is good enough to deal with this
+    # note that both the if_item and else_item are run and evaluated
+    #      before enterring this function
     if bool_item:
         return if_item
     return else_item
 
 
-# ind stands for induction
+# recursion
 def ind(input1, num_times: int, f):
-    return cond(
-        eq(num_times, 0),
-        input1,
-        ind(f(input1), pred(num_times), f)
-    )
+    # ind stands for induction
 
-
-
+    # can't use cond here because it will run ind even if num_times is 0
+    if less_than(num_times, zero()):
+        raise ValueError("num times cannot be negative")
+    elif eq(num_times, zero()):
+        return input1
+    return ind(f(input1), pred(num_times), f)
 
 # ind(b)(h)(succ(n)) =
 # ind(b)(h)(0) = h(ind(b)(b))
 
 
-# list manipulations
-def first(l: list):
-    return l[0]
-
-
-def last(l: list):
-    return l[-1]
-
-
-
+# # list manipulations
+# def first(l: list):
+#     return l[0]
+#
+#
+# def last(l: list):
+#     return l[-1]
