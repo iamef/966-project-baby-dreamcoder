@@ -1,6 +1,6 @@
 import unittest
 from primitives import *
-
+from handcoded_to_learn import *
 
 class TestPrimitives(unittest.TestCase):
     def test_zero(self):
@@ -60,6 +60,19 @@ class TestPrimitives(unittest.TestCase):
         self.assertEqual(ind(zero(), succ(succ(succ(succ(succ(zero()))))), pred), -5)
 
 
+class TestHandcodedThingsToLearn(unittest.TestCase):
+    def test_positive_plus(self):
+        self.assertEqual(positive_plus(1, 3), 4)
+        self.assertEqual(positive_plus(0, 10), 10)
+        self.assertEqual(positive_plus(46, 589), 635)
+
+    def test_plus(self):
+        self.assertEqual(plus(0, 0), 0)
+        self.assertEqual(plus(2, 0), 2)
+        self.assertEqual(plus(0, 10), 10)
+        self.assertEqual(plus(46, 589), 635)
+        self.assertEqual(plus(-549, 59), -490)
+        self.assertEqual(plus(320, -29), 291)
 
 
 
