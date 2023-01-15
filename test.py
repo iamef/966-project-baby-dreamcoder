@@ -18,6 +18,11 @@ class TestPrimitives(unittest.TestCase):
         self.assertEqual(succ(-1), 0, "succ of -1 should be 0")
         self.assertEqual(succ(-11), -10, "succ of -11 should be -10")
 
+    def test_neg(self):
+        self.assertEqual(neg(zero()), zero())
+        self.assertEqual(neg(1), -1)
+        self.assertEqual(neg(-9), 9)
+
     def test_equal(self):
         self.assertTrue(eq(zero(), 0), "eq(zero(), 0) should return true")
         self.assertTrue(eq(5, 5), "eq(5, 5) should return true")
