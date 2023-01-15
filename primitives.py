@@ -1,5 +1,6 @@
 
 # number manipulations
+# alternatively we could just have integers in general be primitives
 def zero():
     return 0
 
@@ -10,6 +11,9 @@ def pred(num: int):
 
 def succ(num: int):
     return num + 1
+
+def neg(num: int):
+    return -1 * num
 
 
 def eq(num1: int, num2: int):
