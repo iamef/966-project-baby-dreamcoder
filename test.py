@@ -1,6 +1,8 @@
 import unittest
 from primitives import *
 from handcoded_to_learn import *
+from wake import *
+
 
 class TestPrimitives(unittest.TestCase):
     def test_zero(self):
@@ -73,6 +75,14 @@ class TestHandcodedThingsToLearn(unittest.TestCase):
         self.assertEqual(plus(46, 589), 635)
         self.assertEqual(plus(-549, 59), -490)
         self.assertEqual(plus(320, -29), 291)
+
+
+class TestWake(unittest.TestCase):
+    def test_get_functions_by_types(self):
+        int_inputs_actual = get_functions_by_types((int,), (int,))
+        bool_inputs_actual = get_functions_by_types((bool,), (bool,))
+
+        self.assertEqual()
 
 
 
