@@ -2,6 +2,7 @@ import unittest
 from primitives import *
 from handcoded_to_learn import *
 from wake import *
+from interpreter import interpret
 
 
 class TestPrimitives(unittest.TestCase):
@@ -77,14 +78,103 @@ class TestHandcodedThingsToLearn(unittest.TestCase):
         self.assertEqual(plus(320, -29), 291)
 
 
+class TestInterpreter(unittest.TestCase):
+    def test_interpreter_by_layers(self):
+        # ONE LAYER CASES
+        # zero arg case
+        zero_arg_prog = (zero, tuple())
+        self.assertEqual(interpret(zero_arg_prog), 0)
+        # one arg case
+        one_arg_prog = (neg, (1,))
+        self.assertEqual(interpret(one_arg_prog), -1)
+        # two+ args case
+        two_arg_prog = (less_than, (4, 5))
+        self.assertEqual(interpret(two_arg_prog), True)
+        three_arg_prog = (ind, (0, 5, pred))
+        self.assertEqual(interpret(three_arg_prog), -5)
+        positive_plus_prog = (ind, (5, 7, succ))
+        self.assertEqual(interpret(positive_plus_prog), 12)
+
+
+        # TWO LAYER CASES
+        # one 2 layer, no other args
+        just_two_layer_prog = (succ, ((succ, (7,)),))
+        self.assertEqual(interpret(just_two_layer_prog), 9)
+        # one 2 layers, one 1 layer
+        two_layer_one_layer_prog = (eq, (
+            -7,
+            (neg, (7,))
+        ))
+        self.assertEqual(interpret(two_layer_one_layer_prog), True)
+
+        # THREE or MORE LAYER CASES
+        # one 6 layer case
+        six_layer_prog = (
+            pred, (
+                (pred, (
+                    (pred, (
+                        neg, (
+                            succ, (zero, tuple())
+                        )
+                    ))
+                ))
+            )
+        )
+        self.assertEqual(interpret(six_layer_prog), -4)
+
+    def test_interpreter_plus(self):
+        def get_plus_prog(num1, num2):
+            prim.ind(num1,
+                 prim.cond(
+                     prim.less_than(prim.zero(), num2),
+                     num2,  # num2 positive case
+                     prim.neg(num2)  # num2 negative case
+                 ),
+                 prim.cond(
+                     prim.less_than(prim.zero(), num2),
+                     prim.succ,  # num2 positive case
+                     prim.pred  # num2 negative case
+                 )
+             )
+
+        # plus
+        num1 = -8
+        num2 = -9
+
+        plus_prog = prim.ind(num1,
+                 prim.cond(
+                     prim.less_than(prim.zero(), num2),
+                     num2,  # num2 positive case
+                     prim.neg(num2)  # num2 negative case
+                 ),
+                 prim.cond(
+                     prim.less_than(prim.zero(), num2),
+                     prim.succ,  # num2 positive case
+                     prim.pred  # num2 negative case
+                 )
+            )
+
+        self.assertEqual(interpret(plus_prog), -17)
+
+
+
+
+
+
+
 class TestWake(unittest.TestCase):
     def test_get_functions_by_types(self):
-        int_inputs_actual = get_functions_by_types((int,), (int,))
-        bool_inputs_actual = get_functions_by_types((bool,), (bool,))
+        self.assertEqual(1, 1)
+        int_inputs_actual = get_functions_by_types((int,), int)
+        bool_inputs_actual = get_functions_by_types((bool,), bool)
 
-        self.assertEqual()
+
+
+
 
 
 
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
+    int_inputs_actual = get_functions_by_types((int,), int)
+    bool_inputs_actual = get_functions_by_types((bool,), bool)
