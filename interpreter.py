@@ -17,18 +17,12 @@ class Program:
         self.args = args
 
 
-
-
-
 def interpret(prog: Program) -> Any:
-    # func, args = program
-
     calculated_args: list = []
     for a in prog.args:
-        if type(a) is not tuple:
+        if type(a) is not Program:  # kinda like base case
             calculated_args.append(a)
-        else:
-            if callable(a[0]):
-                calculated_args.append(interpret(a))
+        else:  # argument is a Program
+            calculated_args.append(interpret(a))
 
     return prog.func(*calculated_args)

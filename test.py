@@ -2,7 +2,7 @@ import unittest
 from primitives import *
 from handcoded_to_learn import *
 from wake import *
-from interpreter import interpret
+from interpreter import *
 
 
 class TestPrimitives(unittest.TestCase):
@@ -82,77 +82,80 @@ class TestInterpreter(unittest.TestCase):
     def test_interpreter_by_layers(self):
         # ONE LAYER CASES
         # zero arg case
-        zero_arg_prog = (zero, tuple())
+        zero_arg_prog = Program(zero, tuple())
         self.assertEqual(interpret(zero_arg_prog), 0)
         # one arg case
-        one_arg_prog = (neg, (1,))
+        one_arg_prog = Program(neg, (1,))
         self.assertEqual(interpret(one_arg_prog), -1)
         # two+ args case
-        two_arg_prog = (less_than, (4, 5))
+        two_arg_prog = Program(less_than, (4, 5))
         self.assertEqual(interpret(two_arg_prog), True)
-        three_arg_prog = (ind, (0, 5, pred))
+        three_arg_prog = Program(ind, (0, 5, pred))
         self.assertEqual(interpret(three_arg_prog), -5)
-        positive_plus_prog = (ind, (5, 7, succ))
+        positive_plus_prog = Program(ind, (5, 7, succ))
         self.assertEqual(interpret(positive_plus_prog), 12)
 
 
         # TWO LAYER CASES
         # one 2 layer, no other args
-        just_two_layer_prog = (succ, ((succ, (7,)),))
+        just_two_layer_prog = Program(succ, (Program(succ, (7,)),))
         self.assertEqual(interpret(just_two_layer_prog), 9)
         # one 2 layers, one 1 layer
-        two_layer_one_layer_prog = (eq, (
+        two_layer_one_layer_prog = Program(eq, (
             -7,
-            (neg, (7,))
+            Program(neg, (7,))
         ))
         self.assertEqual(interpret(two_layer_one_layer_prog), True)
 
         # THREE or MORE LAYER CASES
         # one 6 layer case
-        six_layer_prog = (
+        six_layer_prog = Program(
             pred, (
-                (pred, (
-                    (pred, (
-                        neg, (
-                            succ, (zero, tuple())
-                        )
-                    ))
-                ))
+                Program(pred, (
+                    Program(pred, (
+                        Program(neg, (
+                            Program(
+                                succ, (Program(zero, tuple()),)
+                            ),
+                        )),
+                    )),
+                )),
             )
         )
         self.assertEqual(interpret(six_layer_prog), -4)
 
     def test_interpreter_plus(self):
-        def get_plus_prog(num1, num2):
-            prim.ind(num1,
-                 prim.cond(
-                     prim.less_than(prim.zero(), num2),
-                     num2,  # num2 positive case
-                     prim.neg(num2)  # num2 negative case
-                 ),
-                 prim.cond(
-                     prim.less_than(prim.zero(), num2),
-                     prim.succ,  # num2 positive case
-                     prim.pred  # num2 negative case
-                 )
-             )
+        # def get_plus_prog(num1, num2):
+        #     ind(num1,
+        #          cond(
+        #              less_than(zero(), num2),
+        #              num2,  # num2 positive case
+        #              neg(num2)  # num2 negative case
+        #          ),
+        #          cond(
+        #              less_than(zero(), num2),
+        #              succ,  # num2 positive case
+        #              pred  # num2 negative case
+        #          )
+        #      )
 
         # plus
         num1 = -8
         num2 = -9
 
-        plus_prog = prim.ind(num1,
-                 prim.cond(
-                     prim.less_than(prim.zero(), num2),
-                     num2,  # num2 positive case
-                     prim.neg(num2)  # num2 negative case
-                 ),
-                 prim.cond(
-                     prim.less_than(prim.zero(), num2),
-                     prim.succ,  # num2 positive case
-                     prim.pred  # num2 negative case
-                 )
-            )
+        plus_prog = Program(ind, (
+             num1,
+             Program(cond, (
+                 Program(less_than, (Program(zero, tuple()), num2)),
+                 num2,  # num2 positive case
+                 Program(neg, (num2,))  # num2 negative case TODO this is bad
+             )),
+             Program(cond, (
+                 Program(less_than, (Program(zero, tuple()), num2)),
+                 succ,  # num2 positive case
+                 pred  # num2 negative case
+             ))
+        ))
 
         self.assertEqual(interpret(plus_prog), -17)
 
