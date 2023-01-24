@@ -1,10 +1,11 @@
 import primitives as prim
 
 import inspect
-from typing import Tuple, List, Any
+from typing import Tuple, List, Any, Callable
 from problem import Problem
 
 from interpreter import *
+
 
 def has_input_type(input_type: Tuple[type, ...], f: callable):
     if input_type is None:
@@ -47,7 +48,25 @@ def has_output_type(output_type: type, f: callable):
     #
     # return len(type_overlap) > 0
 
-def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[callable]:
+
+def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List[Tuple[str, callable]]:
+    """
+
+    :param filt: callable. input is a Tuple (function_name: string, function: callable)
+                            output is a boolean indicating whether or not the function passes the filter or not
+    :return: a list of functions in List[Tuple]
+    TODO double check on the thing it actually returns.
+    """
+    funcs = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
+
+    # sort functions by number of arguments, then by name
+    # todo in the future sort the functions by Bayesian probabilities
+    funcs.sort(key=lambda f: (f[1].__code__.co_argcount, f[0]))
+
+    return funcs
+
+
+def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[Tuple[str, callable]]:
     """
     gets function with at least one of the input types
 
@@ -58,15 +77,18 @@ def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> L
     returns function in order of least number of inputs to most number of inputs
     """
     def is_right_type(f):
+        # todo the is function is not necessary
         return inspect.isfunction(f) and has_input_type(input_type, f) and has_output_type(output_type, f)
 
+    return get_functions_filtered(is_right_type)
 
-    funcs = inspect.getmembers(prim, is_right_type)
 
-    # sort functions by number of arguments, then by name
-    funcs.sort(key=lambda f: (f[0].__code__.co_argcount, f[1]))
+def get_functions_by_output_type(output_type: type) -> List[Tuple[str, callable]]:
+    return get_functions_filtered(
+        # todo the is function is not necessary
+        lambda f: inspect.isfunction(f) and has_output_type(output_type, f)
+    )
 
-    return funcs
 
 
 def get_functions_by_output_type(output_type: type) -> List[callable]:
