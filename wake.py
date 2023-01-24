@@ -76,6 +76,7 @@ def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> L
 
     returns function in order of least number of inputs to most number of inputs
     """
+
     def is_right_type(f):
         # todo the is function is not necessary
         return inspect.isfunction(f) and has_input_type(input_type, f) and has_output_type(output_type, f)
@@ -90,68 +91,54 @@ def get_functions_by_output_type(output_type: type) -> List[Tuple[str, callable]
     )
 
 
-# TO_FILL = None
-# class FunctionBuilder:
-#     def __init__(self, initial_func=None, output_type=type(None)):
-#         if initial_func is None:
-#             self.func_tree = []
-#             self.missing_components = None
-#         elif callable(initial_func):
-#             self.func_tree = [initial_func]
-#             self.missing_components =
-#         # elif type(initial_func) is list:
-#         #     self.func_tree = initial_func
-#         else:
-#             raise TypeError("initial_func must be None, Callable, or function tree")
-#
-#         self.check_func_tree()
-#
-#     def check_func_tree(self, func_tree: None):
-#         if func_tree is None:
-#             func_tree = self.func_tree
-#
-#         if len(func_tree) == 0:
-#             return
-
-
-
-
-
-
-
-
-
-
-
-def generate_function(problem: Problem, depth=5):
-    function_layers = []
+def generate_programs(prob: Problem, depth=5) -> List[Program]:
+    valid_funcs = []
 
     funcs_to_complete_queue = [None]
 
-    prob_num_inputs = len(problem.input_type)
+    prob_num_inputs = len(prob.input_type)
 
-    input_type_order_map = {}
+    inp_type_var_map = {}
     for i in range(prob_num_inputs):
-        input_type = problem.input_type[i]
+        input_type = prob.input_type[i]
 
-        if input_type not in input_type_order_map:
-            input_type_order_map[input_type] = [i]
+        if input_type not in inp_type_var_map:
+            inp_type_var_map[input_type] = [i]
         else:
-            input_type_order_map[input_type].append(i)
+            inp_type_var_map[input_type].append(i)
 
     # first test if just returning the inputs work
-    for inp in input_type_order_map.setdefault(problem.output_type, []):
-        func = lambda args: args[inp]
-        if test_function(problem, func):
-            return func
+    output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
+    simple_func_input = tuple("x_" + str(i) for i in range(len(output_matching_inputs)))
+    # simple_func_input = (simple_func_input,)  # technically we only have one input so we put it all to a tuple
+    for inp in inp_type_var_map.setdefault(prob.output_type, []):
+        # def prog(args): return args[inp]
+        def program_factory(dont_change):
+            return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
 
+        prog = program_factory(inp)
 
+        # you can't do the below because the looping inp will update the
+        # inp in valid_funcs which is quite bad... args[inp]
+        # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
+
+        if test_program(prob, prog):  # if len(valid_funcs) == 0:
+            valid_funcs.append(prog)
+
+        # print(prog, valid_funcs[0])
+        # print(prog.args, valid_funcs[0].args)
+        # as you can see in this print statement,
+        # the prog and valid_funcs start will  matching because the inp update affects both of them
+        # for the case prog = Program(lambda *args: args[inp]
+        # print(interpret(prog, (42356, 1435, 123, 5, 176)), interpret(valid_funcs[0], (42356, 1435, 123, 5, 176)))
+
+    return valid_funcs
 
     # # terminals = [prim.zero].extend(range(prob_num_inputs))
     # # terminals = list(range(prob_num_inputs))
     # # # funcs_to_complete_queue.extend(terminals)
     #
-    # layer1 = get_functions_by_types(problem.input_type, problem.output_type)
+    # layer1 = get_functions_by_types(prob.input_type, prob.output_type)
     # funcs_to_complete_queue.extend(layer1)
     #
     # while len(funcs_to_complete_queue) > 0:
@@ -169,12 +156,9 @@ def generate_function(problem: Problem, depth=5):
     # #`
 
 
-def test_function(problem: Problem, func: callable):  # figure out how to make a program out of this...
+def test_program(problem: Problem, prog: Program):  # figure out how to make a program out of this...
     for inp, out in problem.input_ouput_pairs:
-        if func(inp) != out:
+        if interpret(prog, inp) != out:
             return False
 
     return True
-
-
-

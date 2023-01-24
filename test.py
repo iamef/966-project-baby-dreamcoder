@@ -178,11 +178,12 @@ class TestWake(unittest.TestCase):
             ]
         )
 
-        out_func = generate_function(first_input_problem)
+        out_progs = generate_programs(first_input_problem)
 
-        for inp, out in first_input_problem.input_ouput_pairs:
-            actual_res: int = out_func(inp)
-            print(actual_res == out, actual_res, out)
+        for out_prog in out_progs:
+            for inp, out in first_input_problem.input_ouput_pairs:
+                actual_res: int = interpret(out_prog, inp)
+                print(actual_res == out, actual_res, out)
 
         # everything_zero_problem = Problem(
         #     input_type=(Any,),
