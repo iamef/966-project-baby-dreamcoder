@@ -6,7 +6,7 @@ from typing import List, Tuple, Any
 class Problem:
     input_type: Tuple[type, ...]
     output_type: type
-    input_ouput_pairs: List[Tuple[Any, Any]]
+    input_ouput_pairs: List[Tuple[Tuple, Any]]
 
 
 EVERYTHING_ZERO_INPUT = Problem(
