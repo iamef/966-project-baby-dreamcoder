@@ -90,14 +90,91 @@ def get_functions_by_output_type(output_type: type) -> List[Tuple[str, callable]
     )
 
 
+# TO_FILL = None
+# class FunctionBuilder:
+#     def __init__(self, initial_func=None, output_type=type(None)):
+#         if initial_func is None:
+#             self.func_tree = []
+#             self.missing_components = None
+#         elif callable(initial_func):
+#             self.func_tree = [initial_func]
+#             self.missing_components =
+#         # elif type(initial_func) is list:
+#         #     self.func_tree = initial_func
+#         else:
+#             raise TypeError("initial_func must be None, Callable, or function tree")
+#
+#         self.check_func_tree()
+#
+#     def check_func_tree(self, func_tree: None):
+#         if func_tree is None:
+#             func_tree = self.func_tree
+#
+#         if len(func_tree) == 0:
+#             return
 
-def get_functions_by_output_type(output_type: type) -> List[callable]:
-    funcs = inspect.getmembers(
-        prim,
-        lambda f: inspect.isfunction(f) and has_output_type(output_type, f)
-    )
 
-    # todo in the future sort the functions by Bayesian probabilities
-    # funcs.sort(key=lambda f: (f.__code__.co_argcount, f.__code__.co_name))
 
-    return funcs
+
+
+
+
+
+
+
+
+def generate_function(problem: Problem, depth=5):
+    function_layers = []
+
+    funcs_to_complete_queue = [None]
+
+    prob_num_inputs = len(problem.input_type)
+
+    input_type_order_map = {}
+    for i in range(prob_num_inputs):
+        input_type = problem.input_type[i]
+
+        if input_type not in input_type_order_map:
+            input_type_order_map[input_type] = [i]
+        else:
+            input_type_order_map[input_type].append(i)
+
+    # first test if just returning the inputs work
+    for inp in input_type_order_map.setdefault(problem.output_type, []):
+        func = lambda args: args[inp]
+        if test_function(problem, func):
+            return func
+
+
+
+    # # terminals = [prim.zero].extend(range(prob_num_inputs))
+    # # terminals = list(range(prob_num_inputs))
+    # # # funcs_to_complete_queue.extend(terminals)
+    #
+    # layer1 = get_functions_by_types(problem.input_type, problem.output_type)
+    # funcs_to_complete_queue.extend(layer1)
+    #
+    # while len(funcs_to_complete_queue) > 0:
+    #     func_composition = funcs_to_complete_queue.pop(0)
+    #
+    #     # find missing part
+    #
+    #     #     todo maybe it would actually be easier to make this stuff into a list...
+    #
+    #
+    #
+    #     # do some test to make program complete in some way
+    #
+    # # def complete_function(func_composition):
+    # #`
+
+
+def test_function(problem: Problem, func: callable):  # figure out how to make a program out of this...
+    for inp, out in problem.input_ouput_pairs:
+        if func(inp) != out:
+            return False
+
+    return True
+
+
+

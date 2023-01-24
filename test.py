@@ -95,7 +95,6 @@ class TestInterpreter(unittest.TestCase):
         positive_plus_prog = Program(ind, (5, 7, succ))
         self.assertEqual(interpret(positive_plus_prog), 12)
 
-
         # TWO LAYER CASES
         # one 2 layer, no other args
         just_two_layer_prog = Program(succ, (Program(succ, (7,)),))
@@ -144,25 +143,20 @@ class TestInterpreter(unittest.TestCase):
         num2 = -9
 
         plus_prog = Program(ind, (
-             num1,
-             Program(cond, (
-                 Program(less_than, (Program(zero, tuple()), num2)),
-                 num2,  # num2 positive case
-                 Program(neg, (num2,))  # num2 negative case TODO this is bad
-             )),
-             Program(cond, (
-                 Program(less_than, (Program(zero, tuple()), num2)),
-                 succ,  # num2 positive case
-                 pred  # num2 negative case
-             ))
+            num1,
+            Program(cond, (
+                Program(less_than, (Program(zero, tuple()), num2)),
+                num2,  # num2 positive case
+                Program(neg, (num2,))  # num2 negative case TODO this is bad
+            )),
+            Program(cond, (
+                Program(less_than, (Program(zero, tuple()), num2)),
+                succ,  # num2 positive case
+                pred  # num2 negative case
+            ))
         ))
 
         self.assertEqual(interpret(plus_prog), -17)
-
-
-
-
-
 
 
 class TestWake(unittest.TestCase):
@@ -171,13 +165,37 @@ class TestWake(unittest.TestCase):
         int_inputs_actual = get_functions_by_types((int,), int)
         bool_inputs_actual = get_functions_by_types((bool,), bool)
 
+    def test_generate_function(self):
+        first_input_problem = Problem(
+            input_type=(int, int, int, int, int),
+            output_type=int,
+            input_ouput_pairs=[
+                ((42356, 1435, 123, 5, 176), 42356),
+                ((1354, 2867, 1342, 814, 132), 1354),
+                ((4, 2, 8, 3, 1), 4),
+                ((89, 26, 27, 83, 34), 89),
+                ((247, 56, 92, 74, 63), 247)
+            ]
+        )
 
+        out_func = generate_function(first_input_problem)
 
+        for inp, out in first_input_problem.input_ouput_pairs:
+            actual_res: int = out_func(inp)
+            print(actual_res == out, actual_res, out)
 
-
+        # everything_zero_problem = Problem(
+        #     input_type=(Any,),
+        #     output_type=int,
+        #     input_ouput_pairs=[
+        #         (True, 0),
+        #         ([1, 2, 3], 0),
+        #         (134, 0),
+        #         (-1530, 0),
+        #         ((False, True), 0)
+        #     ]
+        # )
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    int_inputs_actual = get_functions_by_types((int,), int)
-    bool_inputs_actual = get_functions_by_types((bool,), bool)
+    unittest.main()
