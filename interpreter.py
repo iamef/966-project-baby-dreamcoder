@@ -5,6 +5,7 @@ from typing import Any, List, Tuple
 # three arg functions (threeArgFunc, (arg1, arg2, arg3))
 # nested program (toplayerfunc, ((innerlayerfunc, (iarg1,)), arg2)
 
+
 class Program:
     func: callable
     args: Tuple

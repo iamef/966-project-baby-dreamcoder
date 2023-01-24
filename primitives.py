@@ -2,6 +2,7 @@ from typing import Any
 
 # number manipulations
 # alternatively we could just have integers in general be primitives
+
 def zero() -> int:
     return 0
 

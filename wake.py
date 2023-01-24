@@ -2,6 +2,7 @@ import primitives as prim
 
 import inspect
 from typing import Tuple, List, Any
+from problem import Problem
 
 
 def get_functions_by_types(input_type: Tuple[type, ...], output_type: Tuple[type, ...]) -> List[callable]:
