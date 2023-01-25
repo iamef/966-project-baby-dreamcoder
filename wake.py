@@ -91,7 +91,7 @@ def get_functions_by_output_type(output_type: type) -> List[callable]:
 
 def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
     """
-    # each partial function has format
+    # each partial function ideally has format (some of the the lists may instead be in tuple format)
     # [
     #   [base func],
     #   [[args1, 2, ... of base func]],
@@ -195,12 +195,12 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
     :param func_args_type_map:
     :param inp_type_var_map:
     :param func_composition:
-    each partial function ideally has format
-    [
-      base func,
-      [args1, 2, ... of base func],
-      [[args of args1 of base function], [args of args2]]
-    ]
+    each partial function ideally has format (some of the the lists may instead be in tuple format)
+    # [
+    #   [base func],
+    #   [[args1, 2, ... of base func]],
+    #   [[args of args1 of base function], [args of args2]] <-- todo maybe this has more brackets idk
+    # ]
     :return: all possitble function fillings
     """
 
@@ -299,11 +299,11 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
 
     valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
 
-    # each partial function has format
+    # each partial function ideally has format (some of the the lists may instead be in tuple format)
     # [
     #   [base func],
-    #   [args1, 2, ... of base func],
-    #   [[args of args1 of base function], [args of args2]]
+    #   [[args1, 2, ... of base func]],
+    #   [[args of args1 of base function], [args of args2]] <-- todo maybe this has more brackets idk
     # ]
     func_args_type_map = {}
     funcs_to_complete_queue = [[[func]] for func in get_functions_by_output_type(prob.output_type)]
