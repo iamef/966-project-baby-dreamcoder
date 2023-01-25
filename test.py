@@ -142,14 +142,14 @@ class TestInterpreter(unittest.TestCase):
         num1 = -8
         num2 = -9
 
-        plus_prog = Program(ind, (
+        plus_prog = Program(ind_int, (
             num1,
-            Program(cond, (
+            Program(cond_int, (
                 Program(less_than, (Program(zero, tuple()), num2)),
                 num2,  # num2 positive case
                 Program(neg, (num2,))  # num2 negative case TODO this is bad
             )),
-            Program(cond, (
+            Program(cond_int, (
                 Program(less_than, (Program(zero, tuple()), num2)),
                 succ,  # num2 positive case
                 pred  # num2 negative case
