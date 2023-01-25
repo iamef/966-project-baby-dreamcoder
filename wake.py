@@ -89,27 +89,26 @@ def get_functions_by_output_type(output_type: type) -> List[callable]:
     )
 
 
-def generate_programs(prob: Problem, depth=5) -> List[Program]:
+
+
+
+
+def valid_programs_returns_input(prob: Problem, inp_type_var_map):
+    """
+    given a problem with multiple inputs
+    this will generate programs that solve the problem by just returning one of the inputs as an output
+
+    :param prob:
+    :param inp_type_var_map:
+    :return:
+    """
     valid_funcs = []
-
-    funcs_to_complete_queue = [None]
-
-    prob_num_inputs = len(prob.input_type)
-
-    inp_type_var_map = {}
-    for i in range(prob_num_inputs):
-        input_type = prob.input_type[i]
-
-        if input_type not in inp_type_var_map:
-            inp_type_var_map[input_type] = [i]
-        else:
-            inp_type_var_map[input_type].append(i)
 
     # first test if just returning the inputs work
     output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
-    simple_func_input = tuple("x_" + str(i) for i in range(len(output_matching_inputs)))
+    simple_func_input = tuple(output_matching_inputs)
     # simple_func_input = (simple_func_input,)  # technically we only have one input so we put it all to a tuple
-    for inp in inp_type_var_map.setdefault(prob.output_type, []):
+    for inp in map(lambda s: int(s.split("_")[1]), output_matching_inputs):
         # def prog(args): return args[inp]
         def program_factory(dont_change):
             return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
