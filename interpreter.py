@@ -46,6 +46,6 @@ def interpret(prog: Program, inp=None) -> Any:
             else:
                 calculated_args.append(a)
         else:  # argument is a Program
-            calculated_args.append(interpret(a))
+            calculated_args.append(interpret(a, inp))
 
     return prog.func(*calculated_args)
