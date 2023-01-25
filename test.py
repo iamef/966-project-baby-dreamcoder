@@ -165,6 +165,22 @@ class TestWake(unittest.TestCase):
         int_inputs_actual = get_functions_by_types((int,), int)
         bool_inputs_actual = get_functions_by_types((bool,), bool)
 
+    def test_get_all_function_specific_fillings(self):
+        funcs = get_functions_by_output_type(int)
+
+        for func in funcs:
+            get_all_function_specific_fillings(func, {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}, {})
+
+    def test_get_all_overall_fillings(self):
+        func_comp = [
+            cond,
+            [less_than, succ, pred],
+            [[succ, pred], [zero], [pred]]
+        ]
+
+        get_all_overall_fillings(func_comp, {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}, {})
+
+
     def test_generate_function(self):
         first_input_problem = Problem(
             input_type=(int, int, int, int, int),
