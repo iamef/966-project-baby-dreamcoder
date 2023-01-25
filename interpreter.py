@@ -9,6 +9,7 @@ import re
 
 class Program:
     func: callable
+    func_name: str
     args: Tuple
 
     def __init__(self, func: callable, args: Tuple):
@@ -22,6 +23,8 @@ class Program:
             raise TypeError("func must be a callable, and args must be a tuple")
 
         self.func = func
+        self.func_name = func.__name__
+
         self.args = args
 
 
