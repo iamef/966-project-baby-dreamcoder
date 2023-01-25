@@ -42,9 +42,18 @@ def cond(bool_item: bool, if_item: Any, else_item: Any) -> Any:
     # note that else_item may be None
     # note that both the if_item and else_item are run and evaluated
     #      before enterring this function
+
     if bool_item:
         return if_item
     return else_item
+
+
+def cond_int(bool_item: bool, if_item: int, else_item: int) -> int:
+    return cond(bool_item, if_item, else_item)
+
+
+def cond_func(bool_item: bool, if_item: callable, else_item: callable) -> callable:
+    return cond(bool_item, if_item, else_item)
 
 
 # recursion
@@ -58,6 +67,10 @@ def ind(input1: Any, num_times: int, f: callable) -> Any:
         return input1
     return ind(f(input1), pred(num_times), f)
 
+
+def ind_int(input1: int, num_times: int, f: callable) -> int:
+    return ind(input1, num_times, f)
+
 # ind(b)(h)(succ(n)) =
 # ind(b)(h)(0) = h(ind(b)(b))
 
@@ -69,4 +82,3 @@ def ind(input1: Any, num_times: int, f: callable) -> Any:
 #
 # def last(l: list):
 #     return l[-1]
-
