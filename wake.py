@@ -22,9 +22,7 @@ def has_input_type(input_type: Tuple[type, ...], f: callable):
         return True
 
     for arg in f_args:
-        if f_args_annotations[arg] is Any:
-            return True
-        elif f_args_annotations[arg] in input_type:
+        if f_args_annotations[arg] in input_type:
             return True
 
     return False
@@ -41,7 +39,7 @@ def has_output_type(output_type: type, f: callable):
 
     # a dictionary mapping variable names to types
     f_args_annotations = inspect.getfullargspec(f).annotations
-    return f_args_annotations['return'] is Any or f_args_annotations['return'] is output_type
+    return f_args_annotations['return'] is output_type
     # f_return_annotation = inspect.signature(prim.zero).return_annotation
     #
     # type_overlap = set(f_return_annotation).intersection(set(output_type).union({Any}))
