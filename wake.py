@@ -153,6 +153,137 @@ def valid_programs_returns_input(prob: Problem, inp_type_var_map):
 
 
 
+def cartesian_product(list1, list2):
+    pass
+
+def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict):
+    func_args_annotations = inspect.getfullargspec(func).annotations
+    del (func_args_annotations['return'])
+
+    # format [[arg1 options], [arg2 options], [arg3 options]]
+    func_args_to_cartesian = []
+    for arg_type in func_args_annotations.values():
+
+        if arg_type not in func_args_type_map:
+            func_args_type_map[arg_type] = []
+            func_args_type_map[arg_type].extend(inp_type_var_map.setdefault(arg_type, []))
+            func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
+
+        this_func_args = func_args_type_map[arg_type]
+        if arg_type is callable and func.__name__ == "ind_int":
+            this_func_args.extend(get_functions_by_output_type(int))
+
+        func_args_to_cartesian.append(this_func_args)
+
+        # personal attempt at doing cartesian product...
+        # if len(func_args_to_cartesian) == 0:
+        #     func_args_fill_in.extend([[arg] for arg in this_func_args])
+        # else:
+        #     # TODO
+        #     old_func_args = func_args_fill_in.copy()
+        #     func_args_fill_in = []
+        #     for arg in this_func_args:
+        #         func_args_fill_in.extend([[*old_func_arg, arg] for old_func_arg in old_func_args])
+
+    ret = list(itertools.product(*func_args_to_cartesian))
+    return ret
+
+
+def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict):
+    """
+
+    :param func_args_type_map:
+    :param inp_type_var_map:
+    :param func_composition:
+    each partial function ideally has format
+    [
+      base func,
+      [args1, 2, ... of base func],
+      [[args of args1 of base function], [args of args2]]
+    ]
+    :return: all possitble function fillings
+    """
+
+    def get_all_overall_fillings_helper(deep_func_list):
+        """
+
+        :param deep_func_list: last line of the func_composition
+        :return: tbd
+        """
+        to_cartesian_prod = []
+        # if type(deep_func_list) is not list:
+        #     deep_func_list = list(deep_func_list)
+
+        for func_layer in deep_func_list:
+            if type(func_layer) is list or type(func_layer) is tuple:
+                to_cartesian_prod.append(get_all_overall_fillings_helper(func_layer))
+            elif not callable(func_layer):
+                to_cartesian_prod.append([])
+            elif len(inspect.getfullargspec(func_layer).args) == 0:
+                to_cartesian_prod.append([[]])
+            else:  # callable and has more than one argument
+                to_cartesian_prod.append(get_all_function_specific_fillings(func_layer, inp_type_var_map, func_args_type_map))
+
+        ret = list(itertools.product(*to_cartesian_prod))
+        return ret
+
+
+    return get_all_overall_fillings_helper(func_composition[-1])
+
+    # fill_in_options
+
+    # for func in func_composition[-1]:
+        # if not callable(func):
+        #     fill_in_options.append([])
+        #     continue
+        # func_args_annotations = inspect.getfullargspec(func).annotations
+        # del (func_args_annotations['return'])
+        #
+        # if len(func_args_annotations) == 0:
+        #     fill_in_options.append([[]])
+        #     continue
+
+        # args for just the particular function
+        # func_args_fill_in = []
+        # for arg_type in func_args_annotations.values():
+        #
+        #     if arg_type not in func_args_type_map:
+        #         func_args_type_map[arg_type] = []
+        #         func_args_type_map[arg_type].extend(inp_type_var_map.setdefault(arg_type, []))
+        #         func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
+        #     this_func_args = func_args_type_map[arg_type]
+        #
+        #     if len(func_args_fill_in) == 0:
+        #         func_args_fill_in.extend([[arg] for arg in this_func_args])
+        #     else:
+        #         # TODO
+        #         old_func_args = func_args_fill_in.copy()
+        #         func_args_fill_in = []
+        #         for arg in this_func_args:
+        #             func_args_fill_in.extend([[*old_func_arg, arg] for old_func_arg in old_func_args])
+
+        # if len(fill_in_options) == 0:
+        #     fill_in_options.extend([[arg] for arg in func_args_fill_in])
+        # else:
+        #     old_fill_in_options = fill_in_options.copy()
+        #     fill_in_options = []
+        #     for arg in func_args_fill_in:
+        #         fill_in_options.extend([[*old_fill_in, arg] for old_fill_in in old_fill_in_options])
+
+
+def fill_in_completes_function(fill_in, inp_type_var_map: dict) -> bool:
+    for func_layer in fill_in:
+        if type(func_layer) is list or type(func_layer) is tuple:
+            if not fill_in_completes_function(func_layer, inp_type_var_map):
+                return False
+        else:
+            terminals_list = [arg for sublist in inp_type_var_map.values() for arg in sublist]
+            if func_layer not in terminals_list:
+                return False
+
+    return True
+
+
 def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
     valid_funcs = []
 
@@ -187,59 +318,21 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
             break
 
         # complete args for everything in the layer
-        fill_in_options = []
-
-        for func in func_composition[-1]:
-            if not callable(func):
-                fill_in_options.append([])
-                continue
-            func_args_annotations = inspect.getfullargspec(func).annotations
-            del(func_args_annotations['return'])
-
-            if len(func_args_annotations) == 0:
-                fill_in_options.append([[]])
-                continue
-
-            # args for just the particular function
-            func_args_fill_in = []
-            for arg_type in func_args_annotations.values():
-
-                if arg_type not in func_args_type_map:
-                    func_args_type_map[arg_type] = []
-                    func_args_type_map[arg_type].extend(inp_type_var_map.setdefault(arg_type, []))
-                    func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
-                this_func_args = func_args_type_map[arg_type]
-
-                if len(func_args_fill_in) == 0:
-                    func_args_fill_in.extend([[arg] for arg in this_func_args])
-                else:
-                    # TODO
-                    old_func_args = func_args_fill_in.copy()
-                    func_args_fill_in = []
-                    for arg in this_func_args:
-                        func_args_fill_in.extend([[*old_func_arg, arg] for old_func_arg in old_func_args])
-
-
-            if len(fill_in_options) == 0:
-                fill_in_options.extend([[arg] for arg in func_args_fill_in])
-            else:
-                old_fill_in_options = fill_in_options.copy()
-                fill_in_options = []
-                for arg in func_args_fill_in:
-                    fill_in_options.extend([[*old_fill_in, arg] for old_fill_in in old_fill_in_options])
-
+        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map)
 
         # test to see if fill in option is done (doesn't need substitutions anymore)
         for fill_in in fill_in_options:
-            done = True
+            # done = True
 
             func_to_complete_plus_fill_in = [*func_composition, fill_in]
 
-            for func_args in fill_in:
-                for func_arg in func_args:
-                    if func_arg not in [arg for sublist in inp_type_var_map.values() for arg in sublist]:
-                        done = False
-                        break
+            # for func_args in fill_in:
+            #     for func_arg in func_args:
+            #         if func_arg not in [arg for sublist in inp_type_var_map.values() for arg in sublist]:
+            #             done = False
+            #             break
+
+            done = fill_in_completes_function(fill_in, inp_type_var_map)
 
             if done:
                 func_prog = func_composition_to_program(func_to_complete_plus_fill_in)
