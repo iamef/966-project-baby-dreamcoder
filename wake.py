@@ -1,10 +1,10 @@
 import primitives as prim
+from problem import Problem
+from interpreter import *
 
 import inspect
+import itertools
 from typing import Tuple, List, Any, Callable
-from problem import Problem
-
-from interpreter import *
 
 
 def has_input_type(input_type: Tuple[type, ...], f: callable):
@@ -106,7 +106,7 @@ def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
         if not callable(arg):
             prog_args.append(arg)
         else:
-            sub_func_comp = [[layer[arg_i]] for layer in func_comp[1:]]
+            sub_func_comp = [layer[arg_i] for layer in func_comp[1:]]
             prog_args.append(func_composition_to_program(sub_func_comp))
 
     return Program(prog_func, tuple(prog_args))
