@@ -185,17 +185,24 @@ class TestWake(unittest.TestCase):
                 actual_res: int = interpret(out_prog, inp)
                 print(actual_res == out, actual_res, out)
 
-        # everything_zero_problem = Problem(
-        #     input_type=(Any,),
-        #     output_type=int,
-        #     input_ouput_pairs=[
-        #         (True, 0),
-        #         ([1, 2, 3], 0),
-        #         (134, 0),
-        #         (-1530, 0),
-        #         ((False, True), 0)
-        #     ]
-        # )
+        everything_zero_problem = Problem(
+            input_type=(Any,),
+            output_type=int,
+            input_ouput_pairs=[
+                (True, 0),
+                ([1, 2, 3], 0),
+                (134, 0),
+                (-1530, 0),
+                ((False, True), 0)
+            ]
+        )
+
+        out_progs = generate_programs(everything_zero_problem)
+
+        for out_prog in out_progs:
+            for inp, out in everything_zero_problem.input_ouput_pairs:
+                actual_res: int = interpret(out_prog, inp)
+                print(actual_res == out, actual_res, out)
 
 
 if __name__ == '__main__':
