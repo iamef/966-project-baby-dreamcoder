@@ -89,7 +89,27 @@ def get_functions_by_output_type(output_type: type) -> List[callable]:
     )
 
 
+def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
+    """
+    # each partial function has format
+    # [
+    #   [base func],
+    #   [[args1, 2, ... of base func]],
+    #   [[args of args1 of base function], [args of args2]] <-- todo maybe this has more brackets idk
+    # ]
+    :return: Program
+    """
+    prog_func = func_comp[0][0]
+    prog_args = []
 
+    for arg_i, arg in enumerate(func_comp[1][0]):
+        if not callable(arg):
+            prog_args.append(arg)
+        else:
+            sub_func_comp = [[layer[arg_i]] for layer in func_comp[1:]]
+            prog_args.append(func_composition_to_program(sub_func_comp))
+
+    return Program(prog_func, tuple(prog_args))
 
 
 
@@ -131,26 +151,104 @@ def valid_programs_returns_input(prob: Problem, inp_type_var_map):
 
     return valid_funcs
 
-    # # terminals = [prim.zero].extend(range(prob_num_inputs))
-    # # terminals = list(range(prob_num_inputs))
-    # # # funcs_to_complete_queue.extend(terminals)
-    #
-    # layer1 = get_functions_by_types(prob.input_type, prob.output_type)
-    # funcs_to_complete_queue.extend(layer1)
-    #
-    # while len(funcs_to_complete_queue) > 0:
-    #     func_composition = funcs_to_complete_queue.pop(0)
-    #
-    #     # find missing part
-    #
-    #     #     todo maybe it would actually be easier to make this stuff into a list...
-    #
-    #
-    #
-    #     # do some test to make program complete in some way
-    #
-    # # def complete_function(func_composition):
-    # #`
+
+
+def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
+    valid_funcs = []
+
+    prob_num_inputs = len(prob.input_type)
+
+    inp_type_var_map = {}
+    for i in range(prob_num_inputs):
+        input_type = prob.input_type[i]
+
+        if input_type not in inp_type_var_map:
+            inp_type_var_map[input_type] = []
+        inp_type_var_map[input_type].append("x_" + str(i))
+
+    valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
+
+    # each partial function has format
+    # [
+    #   [base func],
+    #   [args1, 2, ... of base func],
+    #   [[args of args1 of base function], [args of args2]]
+    # ]
+    func_args_type_map = {}
+    funcs_to_complete_queue = [[[func]] for func in get_functions_by_output_type(prob.output_type)]
+
+    while len(funcs_to_complete_queue) > 0:  # also figure out the depth situation
+        func_composition = funcs_to_complete_queue.pop(0)
+
+        # stop the while loop when we hit max_depth
+        # currently functions are in order of depth
+        # so this should terminate when we reach the first func that is > max_depth
+        if len(func_composition) > max_depth:
+            break
+
+        # complete args for everything in the layer
+        fill_in_options = []
+
+        for func in func_composition[-1]:
+            if not callable(func):
+                fill_in_options.append([])
+                continue
+            func_args_annotations = inspect.getfullargspec(func).annotations
+            del(func_args_annotations['return'])
+
+            if len(func_args_annotations) == 0:
+                fill_in_options.append([[]])
+                continue
+
+            # args for just the particular function
+            func_args_fill_in = []
+            for arg_type in func_args_annotations.values():
+
+                if arg_type not in func_args_type_map:
+                    func_args_type_map[arg_type] = []
+                    func_args_type_map[arg_type].extend(inp_type_var_map.setdefault(arg_type, []))
+                    func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
+                this_func_args = func_args_type_map[arg_type]
+
+                if len(func_args_fill_in) == 0:
+                    func_args_fill_in.extend([[arg] for arg in this_func_args])
+                else:
+                    # TODO
+                    old_func_args = func_args_fill_in.copy()
+                    func_args_fill_in = []
+                    for arg in this_func_args:
+                        func_args_fill_in.extend([[*old_func_arg, arg] for old_func_arg in old_func_args])
+
+
+            if len(fill_in_options) == 0:
+                fill_in_options.extend([[arg] for arg in func_args_fill_in])
+            else:
+                old_fill_in_options = fill_in_options.copy()
+                fill_in_options = []
+                for arg in func_args_fill_in:
+                    fill_in_options.extend([[*old_fill_in, arg] for old_fill_in in old_fill_in_options])
+
+
+        # test to see if fill in option is done (doesn't need substitutions anymore)
+        for fill_in in fill_in_options:
+            done = True
+
+            func_to_complete_plus_fill_in = [*func_composition, fill_in]
+
+            for func_args in fill_in:
+                for func_arg in func_args:
+                    if func_arg not in [arg for sublist in inp_type_var_map.values() for arg in sublist]:
+                        done = False
+                        break
+
+            if done:
+                func_prog = func_composition_to_program(func_to_complete_plus_fill_in)
+                if test_program(prob, func_prog):  # if len(valid_funcs) == 0:
+                    valid_funcs.append(func_prog)
+            else:
+                funcs_to_complete_queue.append(func_to_complete_plus_fill_in)
+
+    return valid_funcs
 
 
 def test_program(problem: Problem, prog: Program):  # figure out how to make a program out of this...
