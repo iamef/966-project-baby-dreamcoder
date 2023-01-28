@@ -1,5 +1,6 @@
 from typing import Any
 
+
 # number manipulations
 # alternatively we could just have integers in general be primitives
 
@@ -19,8 +20,8 @@ def neg(num: int) -> int:
     return -1 * num
 
 
-def eq(num1: int, num2: int) -> bool:
-    return num1 == num2
+# def eq(num1: int, num2: int) -> bool:
+#     return num1 == num2
 
 
 def less_than(num1: int, num2: int) -> bool:
@@ -71,7 +72,7 @@ def ind(input1: Any, num_times: int, f: callable) -> Any:
     # can't use cond here because it will run ind even if num_times is 0
     if less_than(num_times, zero()):
         raise ValueError("num times cannot be negative")
-    elif eq(num_times, zero()):
+    elif num_times == zero():
         return input1
     return ind(f(input1), pred(num_times), f)
 

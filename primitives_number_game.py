@@ -28,14 +28,14 @@ def less_than(num1: int, num2: int) -> bool:
 
 
 # boolean things
-# def conj(bool1: bool, bool2: bool) -> bool:
-#     # and (conjunction)
-#     return bool1 and bool2
-#
-#
-# def disj(bool1: bool, bool2: bool) -> bool:
-#     # or (disjunction)
-#     return bool1 or bool2
+def conj(bool1: bool, bool2: bool) -> bool:
+    # and (conjunction)
+    return bool1 and bool2
+
+
+def disj(bool1: bool, bool2: bool) -> bool:
+    # or (disjunction)
+    return bool1 or bool2
 
 
 def cond(bool_item: bool, if_item: Any, else_item: Any) -> Any:
@@ -56,28 +56,39 @@ def cond_func(bool_item: bool, if_item: callable, else_item: callable) -> callab
     return cond(bool_item, if_item, else_item)
 
 
-# recursion
 # think about replacing induction with
 # plus, multiplication, and divisibility stuff
+def plus(num1: int, num2: int) -> int:
+    return num1 + num2
+
+
+def mul(num1: int, num2: int) -> int:
+    return num1 * num2
+
+
+def divisible_by(num: int, divisor: int) -> bool:
+    return num % divisor == 0
+
+# recursion
 
 # ^ can learn all patterns in number games data
 # inequality stuff
 # intersection of things
 # weirder things
 
-def ind(input1: Any, num_times: int, f: callable) -> Any:
-    # ind stands for induction
-
-    # can't use cond here because it will run ind even if num_times is 0
-    if less_than(num_times, zero()):
-        raise ValueError("num times cannot be negative")
-    elif eq(num_times, zero()):
-        return input1
-    return ind(f(input1), pred(num_times), f)
-
-
-def ind_int(input1: int, num_times: int, f: callable) -> int:
-    return ind(input1, num_times, f)
+# def ind(input1: Any, num_times: int, f: callable) -> Any:
+#     # ind stands for induction
+#
+#     # can't use cond here because it will run ind even if num_times is 0
+#     if less_than(num_times, zero()):
+#         raise ValueError("num times cannot be negative")
+#     elif eq(num_times, zero()):
+#         return input1
+#     return ind(f(input1), pred(num_times), f)
+#
+#
+# def ind_int(input1: int, num_times: int, f: callable) -> int:
+#     return ind(input1, num_times, f)
 
 # ind(b)(h)(succ(n)) =
 # ind(b)(h)(0) = h(ind(b)(b))

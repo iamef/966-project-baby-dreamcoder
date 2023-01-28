@@ -1,4 +1,4 @@
-import primitives as prim
+import primitives_induction as prim
 from problem import Problem
 from interpreter import *
 

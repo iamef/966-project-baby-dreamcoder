@@ -22,8 +22,6 @@ number_game_primitive_weights = {
     callable: {
         (bool, callable, callable): 1
     }
-
-
 }
 
 

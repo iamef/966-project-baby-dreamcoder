@@ -1,4 +1,4 @@
-import primitives as prim
+import primitives_induction as prim
 # todo maybe do from prmitives import *
 
 # Goal
