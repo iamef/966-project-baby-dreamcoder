@@ -28,14 +28,14 @@ def less_than(num1: int, num2: int) -> bool:
 
 
 # boolean things
-def conj(bool1: bool, bool2: bool) -> bool:
-    # and (conjunction)
-    return bool1 and bool2
-
-
-def disj(bool1: bool, bool2: bool) -> bool:
-    # or (disjunction)
-    return bool1 or bool2
+# def conj(bool1: bool, bool2: bool) -> bool:
+#     # and (conjunction)
+#     return bool1 and bool2
+#
+#
+# def disj(bool1: bool, bool2: bool) -> bool:
+#     # or (disjunction)
+#     return bool1 or bool2
 
 
 def cond(bool_item: bool, if_item: Any, else_item: Any) -> Any:
@@ -57,6 +57,14 @@ def cond_func(bool_item: bool, if_item: callable, else_item: callable) -> callab
 
 
 # recursion
+# think about replacing induction with
+# plus, multiplication, and divisibility stuff
+
+# ^ can learn all patterns in number games data
+# inequality stuff
+# intersection of things
+# weirder things
+
 def ind(input1: Any, num_times: int, f: callable) -> Any:
     # ind stands for induction
 
