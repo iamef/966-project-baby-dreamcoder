@@ -49,3 +49,7 @@ def interpret(prog: Program, inp=None) -> Any:
             calculated_args.append(interpret(a, inp))
 
     return prog.func(*calculated_args)
+
+    # if program and input pairs, because there are a lot of
+    # depth 1 inputs are the same
+    # todo we can also incorporate some hashing
