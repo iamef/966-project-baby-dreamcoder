@@ -183,14 +183,14 @@ class TestWake(unittest.TestCase):
 
     def test_generate_function(self):
         first_input_problem = Problem(
-            input_type=(int, int, int, int, int),
+            input_type=(int, int),
             output_type=int,
             input_ouput_pairs=[
-                ((42356, 1435, 123, 5, 176), 42356),
-                ((1354, 2867, 1342, 814, 132), 1354),
-                ((4, 2, 8, 3, 1), 4),
-                ((89, 26, 27, 83, 34), 89),
-                ((247, 56, 92, 74, 63), 247)
+                ((42, 14), 42),  # 123, 5, 176
+                ((1, 2), 1),  # 1342, 814, 132
+                ((4, 2), 4),  # 8, 3, 1
+                ((8, 26), 8),  # 27, 83, 34
+                ((7, 56), 7)  # 92, 74, 63
             ]
         )
 
@@ -212,6 +212,7 @@ class TestWake(unittest.TestCase):
                 ((False, True), 0)
             ]
         )
+        # actually
 
         out_progs = generate_programs(everything_zero_problem)
 
