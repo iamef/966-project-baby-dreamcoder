@@ -106,11 +106,11 @@ def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
         if not callable(arg):
             prog_args.append(arg)
         else:
-            sub_func_comp = [layer[arg_i] for layer in func_comp[1:]]
+            # extra [0] because there is extra [] in arg of base func that trickles down
+            sub_func_comp = [[layer[0][arg_i]] for layer in func_comp[1:]]
             prog_args.append(func_composition_to_program(sub_func_comp))
 
     return Program(prog_func, tuple(prog_args))
-
 
 
 def valid_programs_returns_input(prob: Problem, inp_type_var_map):
@@ -152,9 +152,9 @@ def valid_programs_returns_input(prob: Problem, inp_type_var_map):
     return valid_funcs
 
 
-
 def cartesian_product(list1, list2):
     pass
+
 
 def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict):
     func_args_annotations = inspect.getfullargspec(func).annotations
@@ -189,7 +189,8 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
     return ret
 
 
-def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict):
+def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict,
+                             terminals_only):
     """
 
     :param func_args_type_map:
@@ -222,11 +223,11 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
             elif len(inspect.getfullargspec(func_layer).args) == 0:
                 to_cartesian_prod.append([[]])
             else:  # callable and has more than one argument
-                to_cartesian_prod.append(get_all_function_specific_fillings(func_layer, inp_type_var_map, func_args_type_map))
+                to_cartesian_prod.append(
+                    get_all_function_specific_fillings(func_layer, inp_type_var_map, func_args_type_map))
 
         ret = list(itertools.product(*to_cartesian_prod))
         return ret
-
 
     return get_all_overall_fillings_helper(func_composition[-1])
 
@@ -297,6 +298,7 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
             inp_type_var_map[input_type] = []
         inp_type_var_map[input_type].append("x_" + str(i))
 
+    # does a simple return one of the inputs
     valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
 
     # each partial function ideally has format (some of the the lists may instead be in tuple format)
@@ -318,7 +320,8 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
             break
 
         # complete args for everything in the layer
-        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map)
+        # todo make the terminals only thing dependendent on stuff, also there may be no fill in options
+        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map, False)
 
         # test to see if fill in option is done (doesn't need substitutions anymore)
         for fill_in in fill_in_options:
