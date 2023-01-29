@@ -281,7 +281,10 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
 
 def test_program(problem: Problem, prog: Program):
     for inp, out in problem.input_ouput_pairs:
-        if interpret(prog, inp) != out:
+        try:
+            if interpret(prog, inp) != out:
+                return False
+        except:  # because ind raises a ValueError when things are negative
             return False
 
     return True
