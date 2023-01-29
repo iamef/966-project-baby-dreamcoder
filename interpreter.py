@@ -28,6 +28,25 @@ class Program:
         self.args = args
 
 
+    def __str__(self):
+        arg_str_list = []
+        for arg in self.args:
+            arg_str = str(arg)
+
+            arg_str_lines = arg_str.split("\n")
+            arg_str_lines = ["\t" + line for line in arg_str_lines]
+
+            arg_str_list.append("\n".join(arg_str_lines))
+
+        args_str = "\n".join(arg_str_list)
+
+        return f"({self.func_name}\n{args_str}\n)"
+
+
+
+
+
+
 def interpret(prog: Program, inp=None) -> Any:
     """
 
