@@ -38,7 +38,7 @@ def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List
     """
 
     :param filt: callable. input is a Tuple (function_name: string, function: callable)
-                            output is a boolean indicating whether or not the function passes the filter or not
+                            output is a boolean indicating whether the function passes the filter or not
     :return: a list of functions in List[Tuple]
     """
     funcs = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
@@ -58,7 +58,7 @@ def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> L
     similarly if output_type is None, rather than NoneType, we ignore output_type
 
 
-    returns function in order of least number of inputs to most number of inputs
+    returns function in order of the least number of inputs to most number of inputs
     """
 
     def is_right_type(f):
@@ -77,7 +77,7 @@ def get_functions_by_output_type(output_type: type) -> List[callable]:
 
 def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
     """
-    # each partial function ideally has format (some of the the lists may instead be in tuple format)
+    # each partial function ideally has format (some the lists may instead be in tuple format)
     # [
     #   [base func],
     #   [[args1, 2, ... of base func]],
@@ -113,7 +113,7 @@ def valid_programs_returns_input(prob: Problem, inp_type_var_map):
     # first test if just returning the inputs work
     output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
     simple_func_input = tuple(output_matching_inputs)
-    # simple_func_input = (simple_func_input,)  # technically we only have one input so we put it all to a tuple
+    # simple_func_input = (simple_func_input,)  # technically we only have one input, so we put it all to a tuple
     for inp in map(lambda s: int(s.split("_")[1]), output_matching_inputs):
         # def prog(args): return args[inp]
         def program_factory(dont_change):
@@ -231,7 +231,7 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
     # does a simple return one of the inputs
     valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
 
-    # each partial function ideally has format (some of the the lists may instead be in tuple format)
+    # each partial function ideally has format (some lists may instead be in tuple format)
     # [
     #   [base func],
     #   [[args1, 2, ... of base func]],
