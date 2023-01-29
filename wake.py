@@ -30,8 +30,11 @@ def has_input_type(input_type: Tuple[type, ...], f: callable):
 
 def has_output_type(output_type: type, f: callable):
     # a dictionary mapping variable names to types
-    f_args_annotations = inspect.getfullargspec(f).annotations
-    return f_args_annotations['return'] is output_type
+    try:
+        f_args_annotations = inspect.getfullargspec(f).annotations
+        return 'return' in f_args_annotations and f_args_annotations['return'] is output_type
+    except:
+        print(f, type)
 
 
 def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List[callable]:
