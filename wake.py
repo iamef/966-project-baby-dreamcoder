@@ -138,7 +138,8 @@ def valid_programs_returns_input(prob: Problem, inp_type_var_map):
     return valid_funcs
 
 
-def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict):
+def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict,
+                                       terminals_only: bool):
     func_args_annotations = inspect.getfullargspec(func).annotations
     del (func_args_annotations['return'])
 
@@ -152,8 +153,14 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
             func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
 
         this_func_args = func_args_type_map[arg_type]
+
         if arg_type is callable and func.__name__ == "ind_int":
             this_func_args.extend(get_functions_by_output_type(int))
+
+        # if we are at the last layer, and we just want terminals,
+        # we don't want to be making and adding all these functions
+        if terminals_only:
+            this_func_args = inp_type_var_map[arg_type]
 
         func_args_to_cartesian.append(this_func_args)
 
@@ -162,13 +169,14 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
 
 
 def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict,
-                             terminals_only):
+                             terminals_only: bool):
     """
 
-    :param func_args_type_map:
-    :param inp_type_var_map:
     :param func_composition:
-    each partial function ideally has format (some of the the lists may instead be in tuple format)
+    :param inp_type_var_map:
+    :param func_args_type_map:
+    :param terminals_only:
+    each partial function ideally has format (some the lists may instead be in tuple format)
     # [
     #   [base func],
     #   [[args1, 2, ... of base func]],
@@ -189,13 +197,15 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
             if type(func_layer) is list or type(func_layer) is tuple:
                 to_cartesian_prod.append(get_all_overall_fillings_helper(func_layer))
             elif not callable(func_layer):
-                to_cartesian_prod.append([])
+                to_cartesian_prod.append([[]])  # we don't want this to contribute to the cartesian product being empty
             elif len(inspect.getfullargspec(func_layer).args) == 0:
                 to_cartesian_prod.append([[]])
             else:  # callable and has more than one argument
                 to_cartesian_prod.append(
-                    get_all_function_specific_fillings(func_layer, inp_type_var_map, func_args_type_map))
+                    get_all_function_specific_fillings(func_layer, inp_type_var_map,
+                                                       func_args_type_map, terminals_only))
 
+        # if any one of the lists are empty, then the cartesian product will be empty as well
         ret = list(itertools.product(*to_cartesian_prod))
         return ret
 
@@ -250,7 +260,8 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
 
         # complete args for everything in the layer
         # todo make the terminals only thing dependendent on stuff, also there may be no fill in options
-        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map, False)
+        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map,
+                                                   len(func_composition) == max_depth)
 
         # test to see if fill in option is done (doesn't need substitutions anymore)
         for fill_in in fill_in_options:
