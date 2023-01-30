@@ -7,7 +7,7 @@
 
 # format
 # dict[func_output][[
-number_game_primitive_weights = {
+ng_prim_weights = {
     int: {  # output is int
         tuple(): 1,
         (int,): 1,

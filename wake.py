@@ -1,10 +1,13 @@
-import primitives_induction as prim
+import primitives_number_game as prim
+
 from problem import Problem
 from interpreter import *
+from bayes import ng_prim_weights
 
 import inspect
 import itertools
 from typing import Tuple, List, Any, Callable
+import numpy as np
 
 
 def has_input_type(input_type: Tuple[type, ...], f: callable):
@@ -34,20 +37,60 @@ def has_output_type(output_type: type, f: callable):
     return 'return' in f_args_annotations and f_args_annotations['return'] is output_type
 
 
-def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List[callable]:
+# def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List[Tuple[callable, float]]:
+#     """
+#
+#     :param filt: callable. input is a Tuple (function_name: string, function: callable)
+#                             output is a boolean indicating whether the function passes the filter or not
+#     :return: a list of functions in List[Tuple]
+#     """
+#     funcs = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
+#
+#     # sort functions by number of arguments, then by name
+#     # todo in the future sort the functions by Bayesian probabilities
+#     funcs.sort(key=lambda f: (f[1].__code__.co_argcount, f[0]))
+#
+#     return list(map(lambda f: f[1], funcs))
+
+
+def get_filtered_funcs_probabilities(filt: Callable[[Tuple[Callable, str]], bool],
+                                 weights_by_type: dict[type, dict[Tuple[type, ...]], float]
+                                 ) -> List[Tuple[callable, float]]:
     """
 
     :param filt: callable. input is a Tuple (function_name: string, function: callable)
                             output is a boolean indicating whether the function passes the filter or not
+    :param weights_by_type:
     :return: a list of functions in List[Tuple]
     """
-    funcs = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
+    name_func_tuples = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
 
-    # sort functions by number of arguments, then by name
-    # todo in the future sort the functions by Bayesian probabilities
-    funcs.sort(key=lambda f: (f[1].__code__.co_argcount, f[0]))
+    # TODO make this more efficient to have Bayes stuff
+    def get_func_probability_weight(f: callable) -> float:
+        f_argsspec = inspect.getfullargspec(f)
 
-    return list(map(lambda f: f[1], funcs))
+        f_args = f_argsspec.args
+
+        # a dictionary mapping variable names to types
+        f_args_annotations = f_argsspec.annotations
+
+        input_type: tuple = tuple(f_args_annotations[arg] for arg in f_args)
+        output_type: type = f_args_annotations['return']
+
+        return weights_by_type.setdefault(output_type, dict()).setdefault(input_type, 0)
+
+    norm_constant = sum([get_func_probability_weight(func) for name, func in name_func_tuples])
+    bayes_probabilities = [(func_name, func, get_func_probability_weight(func) / norm_constant)
+                           for func_name, func in name_func_tuples]
+
+
+    # sort functions by
+    # (1) Bayesian probabilities (negative because want in descending order
+    # (2) number of args
+    # (3) function name
+    bayes_probabilities.sort(key=lambda f: (-f[2], f[1].__code__.co_argcount, f[0]))
+
+    return list(map(lambda f: f[1:], bayes_probabilities))
 
 
 def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[callable]:

@@ -1,4 +1,6 @@
 import unittest
+
+import bayes
 import primitives_induction as primi
 from handcoded_to_learn import *
 from wake import *
