@@ -162,16 +162,74 @@ class TestInterpreter(unittest.TestCase):
 
 
 class TestWake(unittest.TestCase):
-    def test_get_functions_by_types(self):
-        self.assertEqual(1, 1)
-        int_inputs_actual = get_functions_by_types((int,), int)
-        bool_inputs_actual = get_functions_by_types((bool,), bool)
+    def test_get_filtered_funcs_probabilities(self):
+        fps = get_filtered_funcs_probabilities(lambda x: True, bayes.ng_prim_weights)
+
+        self.assertAlmostEqual(sum([t[1] for t in fps]), 1)
+
+        # for primitives_induction results should be the below
+        # [(<function zero at 0x12db1b550>, 0.15306122448979592),
+        # (<function neg at 0x12db1b700>, 0.15306122448979592),
+        # (<function pred at 0x12db1b5e0>, 0.15306122448979592),
+        # (<function succ at 0x12db1b670>, 0.15306122448979592),
+        # (<function less_than at 0x12db1b790>, 0.15306122448979592),
+        # (<function cond_func at 0x12db1b940>, 0.15306122448979592),
+        # (<function cond_int at 0x12db1b8b0>, 0.05102040816326531),
+        # (<function ind_int at 0x12db1ba60>, 0.030612244897959186),
+        # (<function cond at 0x12db1b820>, 0.0),
+        # (<function ind at 0x12db1b9d0>, 0.0)]
+
+        # for primitives_number_game
+        # [(< function zero at 0x12b13b280 >, 0.08823529411764706),
+        #  (< function neg at 0x12b13b430 >, 0.08823529411764706),
+        #  (< function pred at 0x12b13b310 >, 0.08823529411764706),
+        #  (< function succ at 0x12b13b3a0 >, 0.08823529411764706),
+        #  (< function divisible_by at 0x12b13b9d0 >, 0.08823529411764706),
+        #  (< function eq at 0x12b13b4c0 >, 0.08823529411764706),
+        #  (< function less_than at 0x12b13b550 >, 0.08823529411764706),
+        #  (< function mul at 0x12b13b940 >, 0.08823529411764706),
+        #  (< function plus at 0x12b13b8b0 >, 0.08823529411764706),
+        #  (< function cond_func at 0x12b13b820 >, 0.08823529411764706),
+        #  (< function conj at 0x12b13b5e0 >, 0.04411764705882353),
+        #  (< function disj at 0x12b13b670 >, 0.04411764705882353),
+        #  (< function cond_int at 0x12b13b790 >, 0.029411764705882356), (< function cond at 0x12b13b700 >, 0.0)]
+
+
+    def test_get_function_probabilities_by_output_type(self):
+        int_func_probs = get_function_probabilities_by_output_type(int, bayes.ng_prim_weights)
+        self.assertAlmostEqual(sum([t[1] for t in int_func_probs]), 1)
+        # [(< function zero at 0x12b73f310 >, 0.15789473684210528),
+        #  (< function neg at 0x12b73f430 >, 0.15789473684210528),
+        #  (< function pred at 0x12b73f280 >, 0.15789473684210528),
+        #  (< function succ at 0x12b73f3a0 >, 0.15789473684210528),
+        #  (< function mul at 0x12b73f940 >, 0.15789473684210528),
+        #  (< function plus at 0x12b73f8b0 >, 0.15789473684210528),
+        #  (< function cond_int at 0x12b73f790 >, 0.05263157894736842)]
+
+        bool_func_probs = get_function_probabilities_by_output_type(bool, bayes.ng_prim_weights)
+        self.assertAlmostEqual(sum([t[1] for t in bool_func_probs]), 1)
+        # [(< function divisible_by at 0x12b765700 >, 0.25),
+        #  (< function eq at 0x12b7651f0 >, 0.25),
+        #  (< function less_than at 0x12b765280 >, 0.25),
+        #  (< function conj at 0x12b765310 >, 0.125),
+        #  (< function disj at 0x12b7653a0 >, 0.125)
+        # ]
+
+        callable_func_probs = get_function_probabilities_by_output_type(callable, bayes.ng_prim_weights)
+        self.assertAlmostEqual(sum([t[1] for t in callable_func_probs]), 1)
+
+
+    # def test_get_functions_by_types(self):
+    #     self.assertEqual(1, 1)
+    #     int_inputs_actual = get_functions_by_types((int,), int)
+    #     bool_inputs_actual = get_functions_by_types((bool,), bool)
 
     def test_get_all_function_specific_fillings(self):
         funcs = get_functions_by_output_type(int)
 
         for func in funcs:
             get_all_function_specific_fillings(func, {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}, {})
+
 
     def test_get_all_overall_fillings(self):
         func_comp = [
@@ -181,7 +239,6 @@ class TestWake(unittest.TestCase):
         ]
 
         get_all_overall_fillings(func_comp, {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}, {})
-
 
     def test_generate_function(self):
         first_input_problem = Problem(
@@ -203,25 +260,25 @@ class TestWake(unittest.TestCase):
                 actual_res: int = interpret(out_prog, inp)
                 print(actual_res == out, actual_res, out)
 
-        everything_zero_problem = Problem(
-            input_type=(Any,),
-            output_type=int,
-            input_ouput_pairs=[
-                (True, 0),
-                ([1, 2, 3], 0),
-                (134, 0),
-                (-1530, 0),
-                ((False, True), 0)
-            ]
-        )
+        # everything_zero_problem = Problem(
+        #     input_type=(Any,),
+        #     output_type=int,
+        #     input_ouput_pairs=[
+        #         (True, 0),
+        #         ([1, 2, 3], 0),
+        #         (134, 0),
+        #         (-1530, 0),
+        #         ((False, True), 0)
+        #     ]
+        # )
         # actually
 
-        out_progs = generate_programs(everything_zero_problem)
-
-        for out_prog in out_progs:
-            for inp, out in everything_zero_problem.input_ouput_pairs:
-                actual_res: int = interpret(out_prog, inp)
-                print(actual_res == out, actual_res, out)
+        # out_progs = generate_programs(everything_zero_problem)
+        #
+        # for out_prog in out_progs:
+        #     for inp, out in everything_zero_problem.input_ouput_pairs:
+        #         actual_res: int = interpret(out_prog, inp)
+        #         print(actual_res == out, actual_res, out)
 
 
 if __name__ == '__main__':
