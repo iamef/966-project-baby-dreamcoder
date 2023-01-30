@@ -7,22 +7,22 @@
 
 # format
 # dict[func_output][[
-ng_prim_weights = {
-    int: {  # output is int
-        tuple(): 1,
-        (int,): 1,
-        (int, int): 1,
-        (bool, int, int): 1/3,
-        (int, int, callable): 1/5  # doesn't exist in primitives number game
-    },
-    bool: {
-        (int, int): 1,
-        (bool, bool): 0.5
-    },
-    callable: {
-        (bool, callable, callable): 1
-    }
-}
+# ng_prim_weights = {
+#     int: {  # output is int
+#         tuple(): 1,
+#         (int,): 1,
+#         (int, int): 1,
+#         (bool, int, int): 1/3,
+#         (int, int, callable): 1/5  # doesn't exist in primitives number game
+#     },
+#     bool: {
+#         (int, int): 1,
+#         (bool, bool): 0.5
+#     },
+#     callable: {
+#         (bool, callable, callable): 1
+#     }
+# }
 
 
 # p(function | next problem) = p(function | previous problems)
