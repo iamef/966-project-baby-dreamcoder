@@ -229,18 +229,18 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
         # if we are at the last layer, and we just want terminals,
         # we don't want to be making and adding all these functions
         if terminals_only:
-            this_func_args = inp_type_var_map[arg_type]
+            this_func_args_and_prob = [(var, 1/len(inp_type_var_map[arg_type])) for var in inp_type_var_map[arg_type]]
 
-        func_args_to_cartesian.append(this_func_args)
+        func_args_to_cartesian.append(this_func_args_and_prob)
 
-    ret = list(itertools.product(*func_args_to_cartesian))
+    ret = filling_probability_cartesian_product(func_args_to_cartesian)
+
     return ret
 
 
 def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict,
-                             terminals_only: bool):
+                             terminals_only: bool) -> List[Tuple[List[Any], float]]:
     """
-
     :param func_composition:
     :param inp_type_var_map:
     :param func_args_type_map:
@@ -251,7 +251,7 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
     #   [[args1, 2, ... of base func]],
     #   [[[args of args1 of base function], [args of args2]]]
     # ]
-    :return: all possitble function fillings
+    :return: all possitble function fillings along with their probabilities
     """
 
     def get_all_overall_fillings_helper(deep_func_list):
