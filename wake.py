@@ -1,3 +1,5 @@
+import functools
+
 import primitives_number_game as prim
 
 from problem import Problem
@@ -178,9 +180,39 @@ def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
 #
 #     return valid_funcs
 
+def filling_probability_cartesian_product(func_args_to_cartesian: list[list[tuple]]) -> List[Tuple[Tuple, float]]:
+    """
+    :param func_args_to_cartesian:
+    # format [[arg1 options], [arg2 options], [arg3 options]]
+    # alternatively [[func1 options], [func2 options], [func3 options]]
+    # each argi option is in the format (function, probability
+
+    :return:
+    [
+        ((arg1_1, arg2_1, arg3_1), prob),
+        ((arg1_2, ...
+    }
+    """
+    cartesianed = list(itertools.product(*func_args_to_cartesian))
+
+    def format_fll_option(bad_format_fill_option):
+        # format of bad_format_fill_option (aka each element of cartesianed)
+        # (
+        #   (arg1_1, prob1), (arg2_1, prob2), (arg3_1, prob3)
+        # )
+        args = tuple(arg for arg, prob in bad_format_fill_option)
+
+        # multiply all the probabilities in the list
+        prob = functools.reduce(lambda prev, curr:  prev * curr[1], bad_format_fill_option, 1)
+
+        return args, prob
+
+    fillings_and_prob = list(map(format_fll_option, cartesianed))
+    return fillings_and_prob
+
 
 def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict,
-                                       terminals_only: bool):
+                                       terminals_only: bool) -> List[Tuple[Tuple[Any], float]]:
     func_args_annotations = inspect.getfullargspec(func).annotations
     del (func_args_annotations['return'])
 
