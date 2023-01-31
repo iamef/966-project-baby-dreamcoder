@@ -267,6 +267,70 @@ def fill_in_completes_function(fill_in, inp_type_var_map: dict) -> bool:
     return True
 
 
+def get_inp_type_var_probabilities_map(prob: Problem):
+    inp_type_var_map = {}
+
+    prob_num_inputs = len(prob.input_type)
+    for i in range(prob_num_inputs):
+        input_type = prob.input_type[i]
+
+        if input_type not in inp_type_var_map:
+            inp_type_var_map[input_type] = []
+        inp_type_var_map[input_type].append("x_" + str(i))
+
+    return inp_type_var_map
+
+
+def get_func_probability_weight(f: callable, weights_by_type) -> float:
+    f_argsspec = inspect.getfullargspec(f)
+
+    f_args = f_argsspec.args
+
+    # a dictionary mapping variable names to types
+    f_args_annotations = f_argsspec.annotations
+
+    input_type: tuple = tuple(f_args_annotations[arg] for arg in f_args)
+    output_type: type = f_args_annotations['return']
+
+    return weights_by_type.setdefault(output_type, dict()).setdefault(input_type, 0)
+
+
+def get_func_args_type_probabilities_map(inp_type_var_map: dict,
+                                         weights_by_type: dict[type, dict[Tuple[type, ...]], float]
+                                         ) -> dict[type, List[Tuple[callable, float]]]:
+    """
+    :param inp_type_var_map:
+    :param weights_by_type:
+    :return:
+
+    format  Dict[output_type, List[Tuple[func, probabilities]]
+    """
+
+    func_args_type_probabilities_map = {}
+
+    for out_type, input_weight_dict in weights_by_type.items():
+        func_args_type_probabilities_map[out_type] = []
+
+        var_weights_list = inp_type_var_map.setdefault(out_type, [])
+        var_weights_list = [(var, 1) for var in var_weights_list]
+
+        func_weights_list = get_functions_by_output_type(out_type)
+        func_weights_list = [(func, get_func_probability_weight(func, weights_by_type)) for func in func_weights_list]
+
+        # sort functions by
+        # (1) Bayesian probabilities (negative because want in descending order)
+        # (2) number of args
+        # (3) function name
+        func_weights_list.sort(key=lambda f: (-f[1], f[0].__code__.co_argcount, f[0].__name__))
+
+        norm_constant = sum([w for var, w in var_weights_list]) + sum([w for f, w in func_weights_list])
+
+        func_args_type_probabilities_map[out_type].extend([(var, w / norm_constant) for var, w in var_weights_list])
+        func_args_type_probabilities_map[out_type].extend([(func, w / norm_constant) for func, w in func_weights_list])
+
+    return func_args_type_probabilities_map
+
+
 def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
     valid_funcs = []
 
