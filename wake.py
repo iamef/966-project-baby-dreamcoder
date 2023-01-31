@@ -6,7 +6,6 @@ from interpreter import *
 import inspect
 import itertools
 from typing import Tuple, List, Any, Callable
-import numpy as np
 
 
 def has_input_type(input_type: Tuple[type, ...], f: callable):
@@ -141,43 +140,43 @@ def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
     return Program(prog_func, tuple(prog_args))
 
 
-def valid_programs_returns_input(prob: Problem, inp_type_var_map):
-    """
-    given a problem with multiple inputs
-    this will generate programs that solve the problem by just returning one of the inputs as an output
-
-    :param prob:
-    :param inp_type_var_map:
-    :return:
-    """
-    valid_funcs = []
-
-    # first test if just returning the inputs work
-    output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
-    simple_func_input = tuple(output_matching_inputs)
-    # simple_func_input = (simple_func_input,)  # technically we only have one input, so we put it all to a tuple
-    for inp in map(lambda s: int(s.split("_")[1]), output_matching_inputs):
-        # def prog(args): return args[inp]
-        def program_factory(dont_change):
-            return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
-
-        prog = program_factory(inp)
-
-        # you can't do the below because the looping inp will update the
-        # inp in valid_funcs which is quite bad... args[inp]
-        # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
-
-        if test_program(prob, prog):  # if len(valid_funcs) == 0:
-            valid_funcs.append(prog)
-
-        # print(prog, valid_funcs[0])
-        # print(prog.args, valid_funcs[0].args)
-        # as you can see in this print statement,
-        # the prog and valid_funcs will start matching because the inp update affects both of them
-        # for the case prog = Program(lambda *args: args[inp]
-        # print(interpret(prog, (42356, 1435, 123, 5, 176)), interpret(valid_funcs[0], (42356, 1435, 123, 5, 176)))
-
-    return valid_funcs
+# def valid_programs_returns_input(prob: Problem, inp_type_var_map):
+#     """
+#     given a problem with multiple inputs
+#     this will generate programs that solve the problem by just returning one of the inputs as an output
+#
+#     :param prob:
+#     :param inp_type_var_map:
+#     :return:
+#     """
+#     valid_funcs = []
+#
+#     # first test if just returning the inputs work
+#     output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
+#     simple_func_input = tuple(output_matching_inputs)
+#     # simple_func_input = (simple_func_input,)  # technically we only have one input, so we put it all to a tuple
+#     for inp in map(lambda s: int(s.split("_")[1]), output_matching_inputs):
+#         # def prog(args): return args[inp]
+#         def program_factory(dont_change):
+#             return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
+#
+#         prog = program_factory(inp)
+#
+#         # you can't do the below because the looping inp will update the
+#         # inp in valid_funcs which is quite bad... args[inp]
+#         # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
+#
+#         if test_program(prob, prog):  # if len(valid_funcs) == 0:
+#             valid_funcs.append(prog)
+#
+#         # print(prog, valid_funcs[0])
+#         # print(prog.args, valid_funcs[0].args)
+#         # as you can see in this print statement,
+#         # the prog and valid_funcs will start matching because the inp update affects both of them
+#         # for the case prog = Program(lambda *args: args[inp]
+#         # print(interpret(prog, (42356, 1435, 123, 5, 176)), interpret(valid_funcs[0], (42356, 1435, 123, 5, 176)))
+#
+#     return valid_funcs
 
 
 def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict,
@@ -267,7 +266,7 @@ def fill_in_completes_function(fill_in, inp_type_var_map: dict) -> bool:
     return True
 
 
-def get_inp_type_var_probabilities_map(prob: Problem):
+def get_inp_type_var_map(prob: Problem):
     inp_type_var_map = {}
 
     prob_num_inputs = len(prob.input_type)
@@ -336,28 +335,25 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
 
     prob_num_inputs = len(prob.input_type)
 
-    inp_type_var_map = {}
-    for i in range(prob_num_inputs):
-        input_type = prob.input_type[i]
-
-        if input_type not in inp_type_var_map:
-            inp_type_var_map[input_type] = []
-        inp_type_var_map[input_type].append("x_" + str(i))
+    inp_type_var_map = get_inp_type_var_map(prob)
 
     # does a simple return one of the inputs
-    valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
+    # todo update this function to actually have return of function
+    # todo alternatively, this won't be used at all in the number game
+    # valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
 
+    # todo update the partial function format because it will now include probabilities
     # each partial function ideally has format (some lists may instead be in tuple format)
     # [
     #   [base func],
     #   [[args1, 2, ... of base func]],
     #   [[[args of args1 of base function], [args of args2]]]
     # ]
-    func_args_type_map = {}
-    funcs_to_complete_queue = [[[func]] for func in get_functions_by_output_type(prob.output_type)]
+    func_args_type_probabilities_map = get_func_args_type_probabilities_map(inp_type_var_map, prim.ng_prim_weights)
+    funcs_to_complete_queue = [[[f_and_prob]] for f_and_prob in func_args_type_probabilities_map[prob.output_type]]
 
     while len(funcs_to_complete_queue) > 0:  # also figure out the depth situation
-        func_composition = funcs_to_complete_queue.pop(0)
+        func_composition, func_prob = funcs_to_complete_queue.pop(0)
 
         # stop the while loop when we hit max_depth
         # currently functions are in order of depth so should terminate when we reach first func that is > max_depth
