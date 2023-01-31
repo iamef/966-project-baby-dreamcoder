@@ -220,15 +220,11 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
     func_args_to_cartesian = []
     for arg_type in func_args_annotations.values():
 
-        if arg_type not in func_args_type_map:
-            func_args_type_map[arg_type] = []
-            func_args_type_map[arg_type].extend(inp_type_var_map.setdefault(arg_type, []))
-            func_args_type_map[arg_type].extend(get_functions_by_output_type(arg_type))
+        this_func_args_and_prob = func_args_type_map[arg_type]
 
-        this_func_args = func_args_type_map[arg_type]
-
-        if arg_type is callable and func.__name__ == "ind_int":
-            this_func_args.extend(get_functions_by_output_type(int))
+        # not relevant to numbers game, can incorporate later
+        # if arg_type is callable and func.__name__ == "ind_int":
+        #     this_func_args.extend(get_functions_by_output_type(int))
 
         # if we are at the last layer, and we just want terminals,
         # we don't want to be making and adding all these functions
