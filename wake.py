@@ -141,43 +141,46 @@ def func_composition_to_program(func_comp: List[List[Any]]) -> Program:
     return Program(prog_func, tuple(prog_args))
 
 
-# def valid_programs_returns_input(prob: Problem, inp_type_var_map):
-#     """
-#     given a problem with multiple inputs
-#     this will generate programs that solve the problem by just returning one of the inputs as an output
-#
-#     :param prob:
-#     :param inp_type_var_map:
-#     :return:
-#     """
-#     valid_funcs = []
-#
-#     # first test if just returning the inputs work
-#     output_matching_inputs = inp_type_var_map.setdefault(prob.output_type, [])
-#     simple_func_input = tuple(output_matching_inputs)
-#     # simple_func_input = (simple_func_input,)  # technically we only have one input, so we put it all to a tuple
-#     for inp in map(lambda s: int(s.split("_")[1]), output_matching_inputs):
-#         # def prog(args): return args[inp]
-#         def program_factory(dont_change):
-#             return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
-#
-#         prog = program_factory(inp)
-#
-#         # you can't do the below because the looping inp will update the
-#         # inp in valid_funcs which is quite bad... args[inp]
-#         # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
-#
-#         if test_program(prob, prog):  # if len(valid_funcs) == 0:
-#             valid_funcs.append(prog)
-#
-#         # print(prog, valid_funcs[0])
-#         # print(prog.args, valid_funcs[0].args)
-#         # as you can see in this print statement,
-#         # the prog and valid_funcs will start matching because the inp update affects both of them
-#         # for the case prog = Program(lambda *args: args[inp]
-#         # print(interpret(prog, (42356, 1435, 123, 5, 176)), interpret(valid_funcs[0], (42356, 1435, 123, 5, 176)))
-#
-#     return valid_funcs
+def valid_programs_returns_input(problem: Problem, inp_type_var_map, func_args_type_map):
+    """
+    given a problem with multiple inputs
+    this will generate programs that solve the problem by just returning one of the inputs as an output
+
+    :param problem:
+    :param inp_type_var_map:
+    :return:
+    """
+    valid_funcs = []
+
+    # first test if just returning the inputs work
+    output_matching_inputs = inp_type_var_map.setdefault(problem.output_type, [])
+    simple_func_input = tuple(output_matching_inputs)
+    # simple_func_input = (simple_func_input,)  # technically we only have one input, so we put it all to a tuple
+    for var in output_matching_inputs:
+        inp = int(var.split("_")[1])
+
+        # def prog(args): return args[inp]
+        def program_factory(dont_change):
+            return Program(lambda *args: args[dont_change], (*simple_func_input, inp))
+
+        prog = program_factory(inp)
+
+        # you can't do the below because the looping inp will update the
+        # inp in valid_funcs which is quite bad... args[inp]
+        # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
+
+        if test_program(problem, prog):  # if len(valid_funcs) == 0:
+            var_prob = list(filter(lambda x: x[0] == var, func_args_type_map[problem.output_type]))
+            valid_funcs.append((prog, var_prob))
+
+        # print(prog, valid_funcs[0])
+        # print(prog.args, valid_funcs[0].args)
+        # as you can see in this print statement,
+        # the prog and valid_funcs will start matching because the inp update affects both of them
+        # for the case prog = Program(lambda *args: args[inp]
+        # print(interpret(prog, (42356, 1435, 123, 5, 176)), interpret(valid_funcs[0], (42356, 1435, 123, 5, 176)))
+
+    return valid_funcs
 
 def filling_probability_cartesian_product(func_args_to_cartesian: list[list[tuple]]) -> List[Tuple[Tuple, float]]:
     """
