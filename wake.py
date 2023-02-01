@@ -360,17 +360,12 @@ def get_func_args_type_probabilities_map(inp_type_var_map: dict,
     return func_args_type_probabilities_map
 
 
-def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
+def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tuple[Program, float]]:
     valid_funcs = []
 
-    prob_num_inputs = len(prob.input_type)
+    prob_num_inputs = len(problem.input_type)
 
-    inp_type_var_map = get_inp_type_var_map(prob)
-
-    # does a simple return one of the inputs
-    # todo update this function to actually have return of function
-    # todo alternatively, this won't be used at all in the number game
-    # valid_funcs.extend(valid_programs_returns_input(prob, inp_type_var_map))
+    inp_type_var_map = get_inp_type_var_map(problem)
 
     # todo update the partial function format because it will now include probabilities
     # each partial function ideally has format (some lists may instead be in tuple format)
@@ -380,7 +375,16 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
     #   [[[args of args1 of base function], [args of args2]]]
     # ]
     func_args_type_probabilities_map = get_func_args_type_probabilities_map(inp_type_var_map, prim.ng_prim_weights)
-    funcs_to_complete_queue = [[[f_and_prob]] for f_and_prob in func_args_type_probabilities_map[prob.output_type]]
+
+    # does a simple return one of the inputs
+    # todo update this function to actually have return of function
+    # todo alternatively, this won't be used at all in the number game
+    valid_funcs.extend(valid_programs_returns_input(problem, inp_type_var_map, func_args_type_probabilities_map))
+
+    funcs_to_complete_queue = [
+        ([[f_and_prob[0]]], f_and_prob[1])  # ([[function]], probbability
+        for f_and_prob in func_args_type_probabilities_map[problem.output_type] if callable(f_and_prob[0])
+    ]
 
     while len(funcs_to_complete_queue) > 0:  # also figure out the depth situation
         func_composition, func_prob = funcs_to_complete_queue.pop(0)
@@ -392,21 +396,26 @@ def generate_programs(prob: Problem, max_depth=2) -> List[Program]:
 
         # complete args for everything in the layer
         # todo make the terminals only thing dependendent on stuff, also there may be no fill in options
-        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map, func_args_type_map,
+        fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map,
+                                                   func_args_type_probabilities_map,
                                                    len(func_composition) == max_depth)
 
         # test to see if fill in option is done (doesn't need substitutions anymore)
-        for fill_in in fill_in_options:
+        for fill_in, fill_in_prob in fill_in_options:
             func_to_complete_plus_fill_in = [*func_composition, fill_in]
+            fun_plus_fill_in_prob = func_prob * fill_in_prob
+
+            if fun_plus_fill_in_prob < min_prob:
+                continue
 
             done = fill_in_completes_function(fill_in, inp_type_var_map)
 
             if done:
                 func_prog = func_composition_to_program(func_to_complete_plus_fill_in)
-                if test_program(prob, func_prog):  # if len(valid_funcs) == 0:
-                    valid_funcs.append(func_prog)
+                if test_program(problem, func_prog):  # if len(valid_funcs) == 0:
+                    valid_funcs.append((func_prog, fun_plus_fill_in_prob))
             else:
-                funcs_to_complete_queue.append(func_to_complete_plus_fill_in)
+                funcs_to_complete_queue.append((func_to_complete_plus_fill_in, fun_plus_fill_in_prob))
 
     return valid_funcs
 
