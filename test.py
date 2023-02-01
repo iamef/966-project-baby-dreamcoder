@@ -277,7 +277,14 @@ class TestWake(unittest.TestCase):
             [[primi.succ, primi.pred], [primi.zero], [primi.pred]]
         ]
 
-        get_all_overall_fillings(func_comp, {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}, {})
+        inp_type_var_map = {int: ["x_0", "x_1", "x_3"], bool: ["x_2"]}
+        func_args_type_map = get_func_args_type_probabilities_map(inp_type_var_map, prim.ng_prim_weights)
+
+        fillings_all = get_all_overall_fillings(func_comp, inp_type_var_map, func_args_type_map, False)
+        fillings_terminals_only = get_all_overall_fillings(func_comp, inp_type_var_map, func_args_type_map, True)
+
+        print(fillings_all)
+        print(fillings_terminals_only)
 
     def test_generate_function(self):
         first_input_problem = Problem(

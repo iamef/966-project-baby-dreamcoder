@@ -47,7 +47,6 @@ def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List
     funcs = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
 
     # sort functions by number of arguments, then by name
-    # todo in the future sort the functions by Bayesian probabilities
     funcs.sort(key=lambda f: (f[1].__code__.co_argcount, f[0]))
 
     return list(map(lambda f: f[1], funcs))
@@ -220,7 +219,7 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
     func_args_to_cartesian = []
     for arg_type in func_args_annotations.values():
 
-        this_func_args_and_prob = func_args_type_map[arg_type]
+        this_func_args_and_prob = func_args_type_map[arg_type]  # todo if time figure out what to do if no functions exist
 
         # not relevant to numbers game, can incorporate later
         # if arg_type is callable and func.__name__ == "ind_int":
@@ -266,16 +265,16 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
             if type(func_layer) is list or type(func_layer) is tuple:
                 to_cartesian_prod.append(get_all_overall_fillings_helper(func_layer))
             elif not callable(func_layer):
-                to_cartesian_prod.append([[]])  # we don't want this to contribute to the cartesian product being empty
+                to_cartesian_prod.append([(tuple(), 1)])  # we don't want this to contribute to the cartesian product being empty
             elif len(inspect.getfullargspec(func_layer).args) == 0:
-                to_cartesian_prod.append([[]])
+                to_cartesian_prod.append([(tuple(), 1)])
             else:  # callable and has more than one argument
                 to_cartesian_prod.append(
                     get_all_function_specific_fillings(func_layer, inp_type_var_map,
                                                        func_args_type_map, terminals_only))
 
         # if any one of the lists are empty, then the cartesian product will be empty as well
-        ret = list(itertools.product(*to_cartesian_prod))
+        ret = filling_probability_cartesian_product(to_cartesian_prod)
         return ret
 
     return get_all_overall_fillings_helper(func_composition[-1])
