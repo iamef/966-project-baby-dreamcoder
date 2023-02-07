@@ -175,7 +175,7 @@ def valid_programs_returns_input(problem: Problem, inp_type_var_map, func_args_t
 
             # grab the prob of var in the format
             var_prob = var_prob[0][1]
-            
+
             valid_funcs.append((prog, var_prob))
 
         # print(prog, valid_funcs[0])
@@ -187,7 +187,7 @@ def valid_programs_returns_input(problem: Problem, inp_type_var_map, func_args_t
 
     return valid_funcs
 
-def filling_probability_cartesian_product(func_args_to_cartesian: list[list[tuple]]) -> List[Tuple[Tuple, float]]:
+def filling_probability_cartesian_product(func_args_to_cartesian: list[list[tuple]], min_prob: float) -> List[Tuple[Tuple, float]]:
     """
     :param func_args_to_cartesian:
     # format [[arg1 options], [arg2 options], [arg3 options]]
@@ -215,11 +215,13 @@ def filling_probability_cartesian_product(func_args_to_cartesian: list[list[tupl
         return args, prob
 
     fillings_and_prob = list(map(format_fll_option, cartesianed))
+    fillings_and_prob = list(filter(lambda arg_prob: arg_prob[1] > min_prob, fillings_and_prob))
+
     return fillings_and_prob
 
 
 def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, func_args_type_map: dict,
-                                       terminals_only: bool) -> List[Tuple[Tuple[Any], float]]:
+                                       terminals_only: bool, min_prob: float) -> List[Tuple[Tuple[Any], float]]:
     func_args_annotations = inspect.getfullargspec(func).annotations
     del (func_args_annotations['return'])
 
@@ -236,17 +238,21 @@ def get_all_function_specific_fillings(func: callable, inp_type_var_map: dict, f
         # if we are at the last layer, and we just want terminals,
         # we don't want to be making and adding all these functions
         if terminals_only:
-            this_func_args_and_prob = [(var, 1/len(inp_type_var_map[arg_type])) for var in inp_type_var_map[arg_type]]
+            this_func_args_and_prob = list(filter(lambda ap: ap[0] in inp_type_var_map[arg_type], this_func_args_and_prob))
+            # this_func_args_and_prob = [(var, 1/len(inp_type_var_map[arg_type])) for var in inp_type_var_map[arg_type]]
+
+        # filter min_prob early so that the cartesian product is easier
+        this_func_args_and_prob = list(filter(lambda arg_prob: arg_prob[1] > min_prob, this_func_args_and_prob))
 
         func_args_to_cartesian.append(this_func_args_and_prob)
 
-    ret = filling_probability_cartesian_product(func_args_to_cartesian)
+    ret = filling_probability_cartesian_product(func_args_to_cartesian, min_prob)
 
     return ret
 
 
 def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict, func_args_type_map: dict,
-                             terminals_only: bool) -> List[Tuple[List[Any], float]]:
+                             terminals_only: bool, min_prob: float) -> List[Tuple[List[Any], float]]:
     """
     :param func_composition:
     :param inp_type_var_map:
@@ -279,10 +285,10 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
             else:  # callable and has more than one argument
                 to_cartesian_prod.append(
                     get_all_function_specific_fillings(func_layer, inp_type_var_map,
-                                                       func_args_type_map, terminals_only))
+                                                       func_args_type_map, terminals_only, min_prob))
 
         # if any one of the lists are empty, then the cartesian product will be empty as well
-        ret = filling_probability_cartesian_product(to_cartesian_prod)
+        ret = filling_probability_cartesian_product(to_cartesian_prod, min_prob)
         return ret
 
     return get_all_overall_fillings_helper(func_composition[-1])
@@ -403,7 +409,8 @@ def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tupl
         # todo make the terminals only thing dependendent on stuff, also there may be no fill in options
         fill_in_options = get_all_overall_fillings(func_composition, inp_type_var_map,
                                                    func_args_type_probabilities_map,
-                                                   len(func_composition) == max_depth)
+                                                   len(func_composition) == max_depth,
+                                                   min_prob / func_prob)
 
         # test to see if fill in option is done (doesn't need substitutions anymore)
         for fill_in, fill_in_prob in fill_in_options:
@@ -422,6 +429,10 @@ def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tupl
             else:
                 funcs_to_complete_queue.append((func_to_complete_plus_fill_in, fun_plus_fill_in_prob))
 
+    # sort functions by 1) probability 2) name
+    valid_funcs.sort(key=lambda f_and_prob: (-f_and_prob[1], str(f_and_prob[0])))
+
+    # todo probably normalize the probabilities for the functions
     return valid_funcs
 
 
