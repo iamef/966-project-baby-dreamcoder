@@ -170,7 +170,12 @@ def valid_programs_returns_input(problem: Problem, inp_type_var_map, func_args_t
         # THIS DOESN'T WORK! prog = Program(lambda *args: args[inp], (*simple_func_input, inp))
 
         if test_program(problem, prog):  # if len(valid_funcs) == 0:
+            # format [(var, prob of var)]
             var_prob = list(filter(lambda x: x[0] == var, func_args_type_map[problem.output_type]))
+
+            # grab the prob of var in the format
+            var_prob = var_prob[0][1]
+            
             valid_funcs.append((prog, var_prob))
 
         # print(prog, valid_funcs[0])
@@ -332,7 +337,7 @@ def get_func_args_type_probabilities_map(inp_type_var_map: dict,
     :param weights_by_type:
     :return:
 
-    format  Dict[output_type, List[Tuple[func, probabilities]]
+    format  Dict[output_type, List[Tuple[func or var, probabilities]]
     """
 
     func_args_type_probabilities_map = {}
