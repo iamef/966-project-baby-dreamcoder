@@ -1,6 +1,14 @@
-from wake import *
+from program_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
+
+# use
+# import primitives_number_game as prim
+# or
+# import primitives_ng_more_ints as prim
+# in program_generator
+# to see the difference between having the 2 different primitive systems
+
 
 def get_accepts_probabilities(progs):
     num_accepts = np.zeros(100)
