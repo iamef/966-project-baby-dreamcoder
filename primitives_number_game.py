@@ -1,6 +1,6 @@
 from typing import Any
 
-ng_prim_weights = {
+prim_weights = {
     int: {  # output is int
         tuple(): 1,
         (int,): 1,

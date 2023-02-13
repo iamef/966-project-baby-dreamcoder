@@ -9,14 +9,14 @@ class Problem:
     input_ouput_pairs: List[Tuple[Tuple, Any]]
 
 
-EVERYTHING_ZERO_INPUT = Problem(
-    (Any,),
-    int,
-    [
-        (True, 0),
-        ([1, 2, 3], 0),
-        (134, 0),
-        (-1530, 0),
-        ((False, True), 0)
-    ]
-)
+# EVERYTHING_ZERO_INPUT = Problem(
+#     (Any,),
+#     int,
+#     [
+#         (True, 0),
+#         ([1, 2, 3], 0),
+#         (134, 0),
+#         (-1530, 0),
+#         ((False, True), 0)
+#     ]
+# )

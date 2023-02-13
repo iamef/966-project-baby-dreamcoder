@@ -8,12 +8,7 @@ from typing import Any
 #
 # int: 3
 
-
-
-
-
-
-ind_prim_weights = {
+prim_weights = {
     int: {  # output is int
         tuple(): 1,
         (int,): 1/4,

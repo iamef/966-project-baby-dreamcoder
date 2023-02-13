@@ -1,6 +1,8 @@
 import functools
 
-import primitives_ng_more_ints as prim
+import primitives_number_game as prim
+# import primitives_ng_more_ints as prim
+# import primitives_induction as prim
 
 from problem import Problem
 from interpreter import *
@@ -385,7 +387,7 @@ def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tupl
     #   [[args1, 2, ... of base func]],
     #   [[[args of args1 of base function], [args of args2]]]
     # ]
-    func_args_type_probabilities_map = get_func_args_type_probabilities_map(inp_type_var_map, prim.ng_prim_weights)
+    func_args_type_probabilities_map = get_func_args_type_probabilities_map(inp_type_var_map, prim.prim_weights)
 
     # does a simple return one of the inputs
     # todo update this function to actually have return of function
