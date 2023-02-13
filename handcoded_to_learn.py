@@ -15,18 +15,19 @@ def positive_plus(num1: int, num2: int):
 
 # works for both positive and negative numbers
 def plus(num1: int, num2: int):
-    return prim.ind_int(num1,
-                        prim.cond_int(
-                 prim.less_than(prim.zero(), num2),
-                 num2,  # num2 positive case
-                 prim.neg(num2)  # num2 negative case
-             ),
-                        prim.cond_func(
-                 prim.less_than(prim.zero(), num2),
-                 prim.succ,  # num2 positive case
-                 prim.pred  # num2 negative case
-             )
-                        )
+    return prim.ind_int(
+        num1,
+        prim.cond_int(
+            prim.less_than(prim.zero(), num2),
+            num2,  # num2 positive case
+            prim.neg(num2)  # num2 negative case
+        ),
+        prim.cond_func(
+            prim.less_than(prim.zero(), num2),
+            prim.succ,  # num2 positive case
+            prim.pred  # num2 negative case
+        )
+    )
     # prim.cond_int(prim.less_than(prim.zero(), num2),
     #     # num2 positive case
     #     positive_plus(num1, num2),
