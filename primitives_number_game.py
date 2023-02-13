@@ -83,9 +83,24 @@ def plus(num1: int, num2: int) -> int:
 def mul(num1: int, num2: int) -> int:
     return num1 * num2
 
+#
+# def div(num1: int, num2: int) -> int:
+#     assert divisible_by(num1, num2)
+#     return int(num1 / num2)
+
 
 def divisible_by(num: int, divisor: int) -> bool:
     return num % divisor == 0
+
+
+
+# def is_commutative(f):
+#     commutative_funcs = {
+#         eq,
+#         plus,
+#         mul
+#     }
+
 
 # recursion
 
