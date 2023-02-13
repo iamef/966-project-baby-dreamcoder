@@ -1,5 +1,34 @@
 from typing import Any
 
+# plus:
+# int, int, callable: 1
+# bool int int: 1
+# bool_func_func: 0
+# nothing: 2
+#
+# int: 3
+
+
+
+
+
+
+ind_prim_weights = {
+    int: {  # output is int
+        tuple(): 1,
+        (int,): 1/4,
+        (int, int): 1,
+        (bool, int, int): 1/3,
+        (int, int, callable): 1/5  # doesn't exist in primitives number game
+    },
+    bool: {
+        (int, int): 1,
+        (bool, bool): 1
+    },
+    callable: {
+        (bool, callable, callable): 1
+    }
+}
 
 # number manipulations
 # alternatively we could just have integers in general be primitives
