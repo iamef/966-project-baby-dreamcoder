@@ -1,9 +1,9 @@
 import unittest
 
-import bayes
-import primitives_induction as primi
-from handcoded_to_learn import *
-from wake import *
+# import bayes
+import under_development.primitives_induction as primi
+from under_development.handcoded_to_learn import *
+from program_generator import *
 from interpreter import *
 
 
@@ -233,7 +233,7 @@ class TestWake(unittest.TestCase):
     #     int_inputs_actual = get_functions_by_types((int,), int)
     #     bool_inputs_actual = get_functions_by_types((bool,), bool)
 
-    def test_filling_probability_cartesian_product(self):
+    # def test_filling_probability_cartesian_product(self):
         # to_cartesian = [(("stuf1_1", "stuf1_2"), 0.5), (("stuf2",), 0.5)]
         # expected = [((("stuf1_1", "stuf1_2"), ("stuf2",)), 0.25)]
         # self.assertListEqual(filling_probability_cartesian_product(to_cartesian), expected)
