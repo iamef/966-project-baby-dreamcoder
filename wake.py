@@ -269,19 +269,33 @@ def get_all_overall_fillings(func_composition: List[Any], inp_type_var_map: dict
     :return: all possitble function fillings along with their probabilities
     """
 
-    def get_all_overall_fillings_helper(deep_func_list):
+    def get_all_overall_fillings_helper(deep_func_list, parent=None):
         """
 
         :param deep_func_list: last line of the func_composition
         :return: tbd
         """
+        # WORK IN PROGRESS ATTEMPT TO NOT FILL IN FUNCTION THAT IS AN ARGUMENT TO ANOTHER FUNCTION
+        # if parent is None:
+        #     # check for parent not being None
+        #     if len(func_composition) > 2:
+        #         parent = func_composition[-2]
+        #     else:
+        #         parent = [[]]
+        #
         to_cartesian_prod = []
 
-        for func_layer in deep_func_list:
+        for i, func_layer in enumerate(deep_func_list):
+            # WORK IN PROGRESS ATTEMPT TO NOT FILL IN FUNCTION THAT IS AN ARGUMENT TO ANOTHER FUNCTION
+            # i_parent = parent[i]
+
             if type(func_layer) is list or type(func_layer) is tuple:
                 to_cartesian_prod.append(get_all_overall_fillings_helper(func_layer))
             elif not callable(func_layer):
                 to_cartesian_prod.append([(tuple(), 1)])  # we don't want this to contribute to the cartesian product being empty
+            # WORK IN PROGRESS ATTEMPT TO NOT FILL IN FUNCTION THAT IS AN ARGUMENT TO ANOTHER FUNCTION
+            # elif callable(parent) and :
+            #
             elif len(inspect.getfullargspec(func_layer).args) == 0:
                 to_cartesian_prod.append([(tuple(), 1)])
             else:  # callable and has more than one argument
