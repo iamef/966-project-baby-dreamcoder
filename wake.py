@@ -1,6 +1,6 @@
 import functools
 
-import primitives_number_game as prim
+import primitives_ng_more_ints as prim
 
 from problem import Problem
 from interpreter import *
