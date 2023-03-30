@@ -18,38 +18,6 @@ from typing import Tuple, List, Any, Callable
 # the rest are helper functions.
 
 
-# def has_input_type(input_type: Tuple[type, ...], f: callable):
-#     """
-#     :param input_type: a Tuple of types
-#     :param f: a functions
-#     :return: True if function has no input arguments
-#             or function with has at least one of the input_types as the input
-#
-#             we include functions with no input arguments because our goal is to
-#             filter out functions that do not have any of the relevant input types
-#             and we don't have to filter out functions with no input arugments when looking for functions
-#     """
-#
-#     if input_type is None:
-#         return True
-#
-#     f_argsspec = inspect.getfullargspec(f)
-#
-#     f_args = f_argsspec.args
-#
-#     # a dictionary mapping variable names to types
-#     f_args_annotations = f_argsspec.annotations
-#
-#     if len(f_args) == 0:
-#         return True
-#
-#     for arg in f_args:
-#         if f_args_annotations[arg] in input_type:
-#             return True
-#
-#     return False
-
-
 def has_output_type(output_type: type, f: callable):
     # a dictionary mapping variable names to types
     f_args_annotations = inspect.getfullargspec(f).annotations
@@ -69,68 +37,6 @@ def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List
     funcs.sort(key=lambda f: (f[1].__code__.co_argcount, f[0]))
 
     return list(map(lambda f: f[1], funcs))
-
-
-# # I think that I decided that normalizing everything was
-# # either not going to work because everything else has to be normalized
-# # or was too complicated to be worth doing.
-# def get_filtered_funcs_probabilities(filt: Callable[[Tuple[Callable, str]], bool],
-#                                  weights_by_type: dict[type, dict[Tuple[type, ...]], float]
-#                                  ) -> List[Tuple[callable, float]]:
-#     """
-
-#     :param filt: callable. input is a Tuple (function_name: string, function: callable)
-#                             output is a boolean indicating whether the function passes the filter or not
-#     :param weights_by_type:
-#     :return: a list of functions in List[Tuple]
-#     """
-#     name_func_tuples = inspect.getmembers(prim, lambda f: inspect.isfunction(f) and filt(f))
-
-#     # TODO make this more efficient to have Bayes stuff
-#     def get_func_probability_weight(f: callable) -> float:
-#         f_argsspec = inspect.getfullargspec(f)
-
-#         f_args = f_argsspec.args
-
-#         # a dictionary mapping variable names to types
-#         f_args_annotations = f_argsspec.annotations
-
-#         input_type: tuple = tuple(f_args_annotations[arg] for arg in f_args)
-#         output_type: type = f_args_annotations['return']
-
-#         return weights_by_type.setdefault(output_type, dict()).setdefault(input_type, 0)
-
-#     norm_constant = sum([get_func_probability_weight(func) for name, func in name_func_tuples])
-#     bayes_probabilities = [(func_name, func, get_func_probability_weight(func) / norm_constant)
-#                            for func_name, func in name_func_tuples]
-
-
-#     # sort functions by
-#     # (1) Bayesian probabilities (negative because want in descending order
-#     # (2) number of args
-#     # (3) function name
-#     bayes_probabilities.sort(key=lambda f: (-f[2], f[1].__code__.co_argcount, f[0]))
-
-#     return list(map(lambda f: f[1:], bayes_probabilities))
-
-
-# Commented out because not used...
-# def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[callable]:
-#     """
-#     gets function with at least one of the input types
-#
-#     if input_type is None, rather than checking that input_type is (None,), we ignore input_type
-#     similarly if output_type is None, rather than checking that input_type is NoneType, we ignore output_type
-#
-#
-#     returns function in order of the least number of inputs to most number of inputs
-#     """
-#
-#     def is_right_type(f):
-#         # the isfunction is not necessary, but redundancy is nice to avoid errors I guess
-#         return inspect.isfunction(f) and has_input_type(input_type, f) and has_output_type(output_type, f)
-#
-#     return get_functions_filtered(is_right_type)
 
 
 def get_functions_by_output_type(output_type: type) -> List[callable]:
