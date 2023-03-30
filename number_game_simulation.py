@@ -10,12 +10,18 @@ import matplotlib.pyplot as plt
 # to see the difference between having the 2 different primitive systems
 
 
+
+def get_normalized(progs):
+    norm_constant = sum([w for f, w in progs])
+    progs_normalized = list(map(lambda x: (x[0], x[1] / norm_constant), progs))
+
+    return progs_normalized
+
 def get_accepts_probabilities(progs):
     num_accepts = np.zeros(100)
     num_probs = np.zeros(100)
 
-    norm_constant = sum([w for f, w in progs])
-    progs_normalized = list(map(lambda x: (x[0], x[1] / norm_constant), progs))
+    progs_normalized = get_normalized(progs)
 
     for i in range(0, 100):
         prob_normed: float
@@ -49,13 +55,20 @@ def num_passes(program):
     return count
 
 
-def get_weighted_accepts_probabilities(progs):
+def get_size_weighted_normalized(progs, power=1):
+    progs_size_weighted = list(map(lambda x: (x[0], x[1] / num_passes(x[0]) ** power), progs))
+    norm_constant = sum([w for f, w in progs_size_weighted])
+    progs_size_weighted = list(map(lambda x: (x[0], x[1] / norm_constant), progs_size_weighted))
+
+    progs_size_weighted.sort(key=lambda f_and_prob: (-f_and_prob[1], str(f_and_prob[0])))
+    return progs_size_weighted
+
+
+def get_weighted_accepts_probabilities(progs, power=1):
     num_accepts = np.zeros(100)
     num_weighted_probs = np.zeros(100)
 
-    progs_size_weighted = list(map(lambda x: (x[0], x[1] / num_passes(x[0])**1), progs))
-    norm_constant = sum([w for f, w in progs_size_weighted])
-    progs_size_weighted = list(map(lambda x: (x[0], x[1] / norm_constant), progs_size_weighted))
+    progs_size_weighted = get_size_weighted_normalized(progs, power)
 
     for i in range(0, 100):
         prob_normed: float
