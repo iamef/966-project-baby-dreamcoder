@@ -1,8 +1,9 @@
 import functools
 
-import primitives_number_game as prim
-# import primitives_ng_more_ints as prim
+# YOU CAN CHOOSE WHICH PRIMITIVES TO USE HERE
 # import primitives_induction as prim
+# import primitives_number_game as prim
+import primitives_ng_more_ints as prim
 
 from problem import Problem
 from interpreter import *
@@ -12,25 +13,41 @@ import itertools
 from typing import Tuple, List, Any, Callable
 
 
-def has_input_type(input_type: Tuple[type, ...], f: callable):
-    if input_type is None:
-        return True
+# NOTE FOR READER: THE MOST IMPORTANT FUNCTION IS
+# generate_programs
+# the rest are helper functions.
 
-    f_argsspec = inspect.getfullargspec(f)
 
-    f_args = f_argsspec.args
-
-    # a dictionary mapping variable names to types
-    f_args_annotations = f_argsspec.annotations
-
-    if len(f_args) == 0:
-        return True
-
-    for arg in f_args:
-        if f_args_annotations[arg] in input_type:
-            return True
-
-    return False
+# def has_input_type(input_type: Tuple[type, ...], f: callable):
+#     """
+#     :param input_type: a Tuple of types
+#     :param f: a functions
+#     :return: True if function has no input arguments
+#             or function with has at least one of the input_types as the input
+#
+#             we include functions with no input arguments because our goal is to
+#             filter out functions that do not have any of the relevant input types
+#             and we don't have to filter out functions with no input arugments when looking for functions
+#     """
+#
+#     if input_type is None:
+#         return True
+#
+#     f_argsspec = inspect.getfullargspec(f)
+#
+#     f_args = f_argsspec.args
+#
+#     # a dictionary mapping variable names to types
+#     f_args_annotations = f_argsspec.annotations
+#
+#     if len(f_args) == 0:
+#         return True
+#
+#     for arg in f_args:
+#         if f_args_annotations[arg] in input_type:
+#             return True
+#
+#     return False
 
 
 def has_output_type(output_type: type, f: callable):
@@ -54,6 +71,9 @@ def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List
     return list(map(lambda f: f[1], funcs))
 
 
+# # I think that I decided that normalizing everything was
+# # either not going to work because everything else has to be normalized
+# # or was too complicated to be worth doing.
 # def get_filtered_funcs_probabilities(filt: Callable[[Tuple[Callable, str]], bool],
 #                                  weights_by_type: dict[type, dict[Tuple[type, ...]], float]
 #                                  ) -> List[Tuple[callable, float]]:
@@ -94,22 +114,23 @@ def get_functions_filtered(filt: Callable[[Tuple[Callable, str]], bool]) -> List
 #     return list(map(lambda f: f[1:], bayes_probabilities))
 
 
-def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[callable]:
-    """
-    gets function with at least one of the input types
-
-    if input_type is None, rather than (None,), we ignore input_type
-    similarly if output_type is None, rather than NoneType, we ignore output_type
-
-
-    returns function in order of the least number of inputs to most number of inputs
-    """
-
-    def is_right_type(f):
-        # the isfunction is not necessary, but redundancy is nice to avoid errors I guess
-        return inspect.isfunction(f) and has_input_type(input_type, f) and has_output_type(output_type, f)
-
-    return get_functions_filtered(is_right_type)
+# Commented out because not used...
+# def get_functions_by_types(input_type: Tuple[type, ...], output_type: type) -> List[callable]:
+#     """
+#     gets function with at least one of the input types
+#
+#     if input_type is None, rather than checking that input_type is (None,), we ignore input_type
+#     similarly if output_type is None, rather than checking that input_type is NoneType, we ignore output_type
+#
+#
+#     returns function in order of the least number of inputs to most number of inputs
+#     """
+#
+#     def is_right_type(f):
+#         # the isfunction is not necessary, but redundancy is nice to avoid errors I guess
+#         return inspect.isfunction(f) and has_input_type(input_type, f) and has_output_type(output_type, f)
+#
+#     return get_functions_filtered(is_right_type)
 
 
 def get_functions_by_output_type(output_type: type) -> List[callable]:
@@ -150,7 +171,7 @@ def valid_programs_returns_input(problem: Problem, inp_type_var_map, func_args_t
 
     :param problem:
     :param inp_type_var_map:
-    :return:
+    :return: valid programs that literally just returns one of the inputs
     """
     valid_funcs = []
 
@@ -388,6 +409,17 @@ def get_func_args_type_probabilities_map(inp_type_var_map: dict,
 
 
 def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tuple[Program, float]]:
+    """
+    THE MOST IMPORTANT FUNCTION IN THIS FILE!!!
+
+    :param problem: input Problem for program to solve
+    :param max_depth: max program depth (max number of times a function can call another function that
+                                         calls another function)
+    :param min_prob: program prior probability cutoff; all programs must have prior probability >= min_prob
+    :return: A list of all the programs that solve the input problem.
+             The return list comes in the form of (program, prior probability).
+             The prior probability is the prior probabilities of each function used multiplied.
+    """
     valid_funcs = []
 
     prob_num_inputs = len(problem.input_type)
@@ -453,6 +485,12 @@ def generate_programs(problem: Problem, max_depth=2, min_prob=1e-6) -> List[Tupl
 
 
 def test_program(problem: Problem, prog: Program):
+    """
+
+    :param problem: input problem
+    :param prog: program
+    :return: True if the program solves the input problem, False if it doesn't
+    """
     for inp, out in problem.input_ouput_pairs:
         try:
             if interpret(prog, inp) != out:
